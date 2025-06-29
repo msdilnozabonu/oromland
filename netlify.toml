@@ -1,0 +1,3 @@
+[build]
+publish = "dist/oromland"
+command = "npm run build"
