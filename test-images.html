@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Image Test</title>
+    <style>
+        .image-test {
+            display: inline-block;
+            margin: 10px;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        .image-test img {
+            width: 200px;
+            height: 150px;
+            object-fit: cover;
+            display: block;
+        }
+        .image-test p {
+            margin: 5px 0 0 0;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Image Loading Test</h1>
+    
+    <div class="image-test">
+        <img src="/assets/camp1.jpg" alt="Camp 1" onerror="this.style.border='2px solid red'">
+        <p>camp1.jpg</p>
+    </div>
+    
+    <div class="image-test">
+        <img src="/assets/camp2.jpeg" alt="Camp 2" onerror="this.style.border='2px solid red'">
+        <p>camp2.jpeg</p>
+    </div>
+    
+    <div class="image-test">
+        <img src="/assets/sanatoriums1.jpg" alt="Sanatorium 1" onerror="this.style.border='2px solid red'">
+        <p>sanatoriums1.jpg</p>
+    </div>
+    
+    <div class="image-test">
+        <img src="/assets/sanatorium-zamin.png" alt="Sanatorium Zamin" onerror="this.style.border='2px solid red'">
+        <p>sanatorium-zamin.png</p>
+    </div>
+    
+    <div class="image-test">
+        <img src="/assets/camp-default.png" alt="Camp Default" onerror="this.style.border='2px solid red'">
+        <p>camp-default.png</p>
+    </div>
+    
+    <div class="image-test">
+        <img src="/assets/sanatorium-default.png" alt="Sanatorium Default" onerror="this.style.border='2px solid red'">
+        <p>sanatorium-default.png</p>
+    </div>
+    
+    <script>
+        // Log when images load or fail
+        document.querySelectorAll('img').forEach(img => {
+            img.onload = () => console.log('✅ Loaded:', img.src);
+            img.onerror = () => console.log('❌ Failed:', img.src);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,308 @@
+<div class="vacancies-page">
+  <section class="hero-section bg-gradient-green text-white py-5">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-lg-8 mx-auto text-center">
+          <h1 class="display-4 fw-bold mb-3">
+            {{ 'Join Our Team' | translate }}
+          </h1>
+          <p class="lead mb-4">
+            {{ 'Build your career with us and make a difference in people\'s lives' | translate }}
+          </p>
+          <div class="stats-row d-flex justify-content-center gap-4 flex-wrap">
+            <div class="stat-item">
+              <h3 class="fw-bold">{{ filteredVacancies.length }}</h3>
+              <p class="mb-0">{{ 'Open Positions' | translate }}</p>
+            </div>
+            <div class="stat-item">
+              <h3 class="fw-bold">15+</h3>
+              <p class="mb-0">{{ 'Locations' | translate }}</p>
+            </div>
+            <div class="stat-item">
+              <h3 class="fw-bold">500+</h3>
+              <p class="mb-0">{{ 'Team Members' | translate }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="filters-section py-4 bg-light">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-10 mx-auto">
+          <div class="filters-card bg-white rounded-3 shadow-sm p-4">
+            <div class="row g-3 align-items-end">
+              <div class="col-md-4">
+                <label class="form-label fw-semibold">{{ 'Search Jobs' | translate }}</label>
+                <div class="input-group">
+                  <span class="input-group-text">
+                    <i class="fas fa-search"></i>
+                  </span>
+                  <input 
+                    type="text" 
+                    class="form-control" 
+                    [(ngModel)]="searchTerm"
+                    (input)="onSearchChange()"
+                    [placeholder]="'Search by title or location...' | translate">
+                </div>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label fw-semibold">{{ 'Department' | translate }}</label>
+                <select 
+                  class="form-select" 
+                  [(ngModel)]="selectedDepartment"
+                  (change)="onFilterChange()">
+                  <option *ngFor="let dept of departments" [value]="dept.value">
+                    {{ dept.label | translate }}
+                  </option>
+                </select>
+              </div>
+              <div class="col-md-3">
+                <label class="form-label fw-semibold">{{ 'Job Type' | translate }}</label>
+                <select 
+                  class="form-select" 
+                  [(ngModel)]="selectedType"
+                  (change)="onFilterChange()">
+                  <option *ngFor="let type of jobTypes" [value]="type.value">
+                    {{ type.label | translate }}
+                  </option>
+                </select>
+              </div>
+              <div class="col-md-2 text-end">
+                <div class="results-count">
+                  <small class="text-muted">
+                    {{ filteredVacancies.length }} {{ 'results' | translate }}
+                  </small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="vacancies-list py-5">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-10 mx-auto">
+          <div *ngIf="filteredVacancies.length === 0" class="no-results text-center py-5">
+            <i class="fas fa-search fa-3x text-muted mb-3"></i>
+            <h4 class="text-muted">{{ 'No vacancies found' | translate }}</h4>
+            <p class="text-muted">{{ 'Try adjusting your search criteria' | translate }}</p>
+          </div>
+          <div class="vacancy-cards">
+            <div *ngFor="let vacancy of filteredVacancies" class="vacancy-card mb-4">
+              <div class="card border-0 shadow-sm h-100">
+                <div class="card-body p-4">
+                  <div class="vacancy-header d-flex justify-content-between align-items-start mb-3">
+                    <div class="vacancy-title-section">
+                      <h4 class="vacancy-title fw-bold text-primary mb-2">
+                        {{ vacancy.title }}
+                      </h4>
+                      <div class="vacancy-meta d-flex flex-wrap gap-3 text-muted">
+                        <span>
+                          <i class="fas fa-building me-1"></i>
+                          {{ getDepartmentLabel(vacancy.department) }}
+                        </span>
+                        <span>
+                          <i class="fas fa-map-marker-alt me-1"></i>
+                          {{ vacancy.location }}
+                        </span>
+                        <span>
+                          <i class="fas fa-clock me-1"></i>
+                          {{ getTypeLabel(vacancy.type) }}
+                        </span>
+                        <span>
+                          <i class="fas fa-experience me-1"></i>
+                          {{ vacancy.experience }}
+                        </span>
+                      </div>
+                    </div>
+                    <div class="vacancy-salary text-end">
+                      <div class="salary-badge bg-success text-white px-3 py-2 rounded-pill">
+                        {{ vacancy.salary }}
+                      </div>
+                    </div>
+                  </div>
+                  <div class="vacancy-description mb-4">
+                    <p class="text-muted mb-0">{{ vacancy.description }}</p>
+                  </div>
+                  <div class="requirements-preview mb-4">
+                    <h6 class="fw-semibold mb-2">{{ 'Key Requirements:' | translate }}</h6>
+                    <ul class="list-unstyled mb-0">
+                      <li *ngFor="let req of vacancy.requirements.slice(0, 3)" class="mb-1">
+                        <i class="fas fa-check text-success me-2"></i>
+                        <small>{{ req }}</small>
+                      </li>
+                      <li *ngIf="vacancy.requirements.length > 3" class="text-muted">
+                        <small>{{ '+ ' + (vacancy.requirements.length - 3) + ' more requirements' | translate }}</small>
+                      </li>
+                    </ul>
+                  </div>
+                  <div class="vacancy-footer d-flex justify-content-between align-items-center">
+                    <div class="vacancy-dates">
+                      <small class="text-muted">
+                        {{ 'Posted:' | translate }} {{ formatDate(vacancy.postedDate) }}
+                      </small>
+                      <br>
+                      <small 
+                        [class]="isDeadlineApproaching(vacancy.deadline) ? 'text-warning' : 'text-muted'">
+                        {{ 'Deadline:' | translate }} {{ formatDate(vacancy.deadline) }}
+                        <span *ngIf="isDeadlineApproaching(vacancy.deadline)" class="badge bg-warning text-dark ms-1">
+                          {{ 'Urgent' | translate }}
+                        </span>
+                      </small>
+                    </div>
+                    <div class="vacancy-actions">
+                      <button 
+                        class="btn btn-outline-primary me-2"
+                        data-bs-toggle="modal" 
+                        [attr.data-bs-target]="'#vacancyModal' + vacancy.id">
+                        {{ 'View Details' | translate }}
+                      </button>
+                      <button class="btn btn-primary">
+                        {{ 'Apply Now' | translate }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+  <section class="why-join-us py-5 bg-light">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-8 mx-auto text-center mb-5">
+          <h2 class="fw-bold mb-3">{{ 'Why Join Our Team?' | translate }}</h2>
+          <p class="lead text-muted">
+            {{ 'We offer more than just a job - we provide a career path with growth opportunities' | translate }}
+          </p>
+        </div>
+      </div>
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="benefit-card text-center p-4">
+            <div class="benefit-icon mb-3">
+              <i class="fas fa-heart fa-3x text-primary"></i>
+            </div>
+            <h5 class="fw-bold mb-3">{{ 'Meaningful Work' | translate }}</h5>
+            <p class="text-muted">
+              {{ 'Make a positive impact on people\'s lives and well-being' | translate }}
+            </p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="benefit-card text-center p-4">
+            <div class="benefit-icon mb-3">
+              <i class="fas fa-graduation-cap fa-3x text-success"></i>
+            </div>
+            <h5 class="fw-bold mb-3">{{ 'Professional Growth' | translate }}</h5>
+            <p class="text-muted">
+              {{ 'Continuous learning opportunities and career advancement' | translate }}
+            </p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="benefit-card text-center p-4">
+            <div class="benefit-icon mb-3">
+              <i class="fas fa-users fa-3x text-warning"></i>
+            </div>
+            <h5 class="fw-bold mb-3">{{ 'Great Team' | translate }}</h5>
+            <p class="text-muted">
+              {{ 'Work with passionate professionals in a supportive environment' | translate }}
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+<div *ngFor="let vacancy of filteredVacancies" 
+     class="modal fade" 
+     [id]="'vacancyModal' + vacancy.id" 
+     tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title fw-bold">{{ vacancy.title }}</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div class="vacancy-details">
+          <div class="row mb-4">
+            <div class="col-md-6">
+              <div class="detail-item mb-3">
+                <strong>{{ 'Department:' | translate }}</strong>
+                <span class="ms-2">{{ getDepartmentLabel(vacancy.department) }}</span>
+              </div>
+              <div class="detail-item mb-3">
+                <strong>{{ 'Location:' | translate }}</strong>
+                <span class="ms-2">{{ vacancy.location }}</span>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="detail-item mb-3">
+                <strong>{{ 'Job Type:' | translate }}</strong>
+                <span class="ms-2">{{ getTypeLabel(vacancy.type) }}</span>
+              </div>
+              <div class="detail-item mb-3">
+                <strong>{{ 'Experience:' | translate }}</strong>
+                <span class="ms-2">{{ vacancy.experience }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="section mb-4">
+            <h6 class="fw-bold mb-3">{{ 'Job Description' | translate }}</h6>
+            <p>{{ vacancy.description }}</p>
+          </div>
+          <div class="section mb-4">
+            <h6 class="fw-bold mb-3">{{ 'Requirements' | translate }}</h6>
+            <ul>
+              <li *ngFor="let req of vacancy.requirements" class="mb-2">{{ req }}</li>
+            </ul>
+          </div>
+          <div class="section mb-4">
+            <h6 class="fw-bold mb-3">{{ 'Responsibilities' | translate }}</h6>
+            <ul>
+              <li *ngFor="let resp of vacancy.responsibilities" class="mb-2">{{ resp }}</li>
+            </ul>
+          </div>
+          <div class="section mb-4">
+            <h6 class="fw-bold mb-3">{{ 'Benefits' | translate }}</h6>
+            <ul>
+              <li *ngFor="let benefit of vacancy.benefits" class="mb-2">{{ benefit }}</li>
+            </ul>
+          </div>
+          <div class="section">
+            <div class="row">
+              <div class="col-md-6">
+                <strong>{{ 'Posted Date:' | translate }}</strong>
+                <span class="ms-2">{{ formatDate(vacancy.postedDate) }}</span>
+              </div>
+              <div class="col-md-6">
+                <strong>{{ 'Application Deadline:' | translate }}</strong>
+                <span class="ms-2" 
+                      [class]="isDeadlineApproaching(vacancy.deadline) ? 'text-warning fw-bold' : ''">
+                  {{ formatDate(vacancy.deadline) }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          {{ 'Close' | translate }}
+        </button>
+        <button type="button" class="btn btn-primary">
+          {{ 'Apply for this Position' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

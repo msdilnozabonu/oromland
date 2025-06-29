@@ -1,1 +1,615 @@
-/* You can add global styles to this file, and also import other style files */
+@import 'bootstrap/dist/css/bootstrap.min.css';
+@import '@fortawesome/fontawesome-free/css/all.min.css';
+
+:root {
+  --primary-yellow: #FFD700;
+  --primary-green: #4CAF50;
+  --light-green: #90EE90;
+  --green-custom: #4CAF50;
+  --light-green-bg: #E8F5E8;
+  --primary-orange: #FFA500;
+  --text-black: #333333;
+  --pure-white: #FFFFFF;
+  --light-gray: #F8F9FA;
+  --border-gray: #E9ECEF;
+  --success-green: #28A745;
+  --danger-red: #DC3545;
+  --warning-yellow: #FFC107;
+  --info-orange: #FFA500;
+  --dark-gray: #6C757D;
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --text-primary: #333333;
+  --text-secondary: #6c757d;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --card-bg: #ffffff;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+:root.dark-mode,
+.dark-mode {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2d2d2d;
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0b0;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --card-bg: #2d2d2d;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --light-gray: #2d2d2d;
+  --border-gray: rgba(255, 255, 255, 0.1);
+  --light-green-bg: #1B5E20;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+body.dark-mode {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.dark-mode {
+  .bg-light {
+    background-color: var(--bg-secondary) !important;
+  }
+  
+  .bg-white {
+    background-color: var(--card-bg) !important;
+  }
+  
+  .text-dark {
+    color: var(--text-primary) !important;
+  }
+  
+  .text-muted {
+    color: var(--text-secondary) !important;
+  }
+  
+  .border {
+    border-color: var(--border-color) !important;
+  }
+  
+  .card {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+  }
+  
+  .modal-content {
+    background-color: var(--card-bg);
+    color: var(--text-primary);
+  }
+  
+  .dropdown-menu {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    
+    .dropdown-item {
+      color: var(--text-primary);
+      
+      &:hover, &:focus {
+        background-color: var(--bg-secondary);
+        color: var(--text-primary);
+      }
+    }
+  }
+  
+  .form-control {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+    
+    &::placeholder {
+      color: var(--text-secondary);
+    }
+    
+    &:focus {
+      background-color: var(--card-bg);
+      border-color: var(--primary-green);
+      color: var(--text-primary);
+      box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+    }
+  }
+  
+  .form-select {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+    
+    &:focus {
+      background-color: var(--card-bg);
+      border-color: var(--primary-green);
+      color: var(--text-primary);
+      box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+    }
+  }
+  
+  .btn-outline-secondary {
+    color: var(--text-secondary);
+    border-color: var(--border-color);
+    
+    &:hover {
+      background-color: var(--bg-secondary);
+      border-color: var(--border-color);
+      color: var(--text-primary);
+    }
+  }
+  
+  .table {
+    color: var(--text-primary);
+    
+    th, td {
+      border-color: var(--border-color);
+    }
+    
+    thead th {
+      background-color: var(--bg-secondary);
+      border-color: var(--border-color);
+    }
+  }
+  
+  .list-group-item {
+    background-color: var(--card-bg);
+    border-color: var(--border-color);
+    color: var(--text-primary);
+  }
+  
+  .alert {
+    border-color: var(--border-color);
+    
+    &.alert-light {
+      background-color: var(--bg-secondary);
+      color: var(--text-primary);
+      border-color: var(--border-color);
+    }
+  }
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: var(--pure-white);
+  color: var(--text-black);
+  line-height: 1.6;
+}
+
+.btn-primary {
+  background-color: var(--primary-green);
+  border-color: var(--primary-green);
+  
+  &:hover {
+    background-color: #45a049;
+    border-color: #45a049;
+  }
+}
+
+.btn-warning {
+  background-color: var(--primary-yellow);
+  border-color: var(--primary-yellow);
+  color: var(--text-black);
+  
+  &:hover {
+    background-color: #E6C200;
+    border-color: #E6C200;
+    color: var(--text-black);
+  }
+}
+
+.btn-success {
+  background-color: var(--light-green);
+  border-color: var(--light-green);
+  color: var(--text-black);
+  
+  &:hover {
+    background-color: #7FDD7F;
+    border-color: #7FDD7F;
+    color: var(--text-black);
+  }
+}
+
+.btn-info {
+  background-color: var(--primary-orange);
+  border-color: var(--primary-orange);
+  color: var(--pure-white);
+  
+  &:hover {
+    background-color: #E6940A;
+    border-color: #E6940A;
+  }
+}
+
+.card {
+  border: 1px solid var(--border-gray);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  
+  &:hover {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+  }
+}
+
+.card-header {
+  background-color: var(--light-gray);
+  border-bottom: 1px solid var(--border-gray);
+  border-radius: 12px 12px 0 0 !important;
+}
+
+.form-control {
+  border-radius: 8px;
+  border: 1px solid var(--border-gray);
+  
+  &:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+  }
+}
+
+.form-select {
+  border-radius: 8px;
+  border: 1px solid var(--border-gray);
+  
+  &:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+  }
+}
+
+.navbar {
+  background-color: var(--pure-white);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.navbar-blur {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.navbar-brand {
+  font-weight: bold;
+  color: var(--green-custom) !important;
+  font-size: 1.5rem;
+}
+
+.nav-link {
+  color: var(--text-black) !important;
+  font-weight: 500;
+  
+  &:hover {
+    color: var(--green-custom) !important;
+  }
+  
+  &.active {
+    color: var(--green-custom) !important;
+  }
+}
+
+.badge {
+  border-radius: 6px;
+  
+  &.bg-warning {
+    background-color: var(--primary-yellow) !important;
+    color: var(--text-black) !important;
+  }
+  
+  &.bg-success {
+    background-color: var(--light-green) !important;
+    color: var(--text-black) !important;
+  }
+  
+  &.bg-info {
+    background-color: var(--primary-orange) !important;
+  }
+}
+
+.alert {
+  border-radius: 8px;
+  border: none;
+  
+  &.alert-warning {
+    background-color: rgba(255, 215, 0, 0.1);
+    color: var(--text-black);
+    border-left: 4px solid var(--primary-yellow);
+  }
+  
+  &.alert-success {
+    background-color: rgba(144, 238, 144, 0.1);
+    color: var(--text-black);
+    border-left: 4px solid var(--light-green);
+  }
+  
+  &.alert-info {
+    background-color: rgba(255, 165, 0, 0.1);
+    color: var(--text-black);
+    border-left: 4px solid var(--primary-orange);
+  }
+  
+  &.alert-primary {
+    background-color: rgba(76, 175, 80, 0.1);
+    color: var(--text-black);
+    border-left: 4px solid var(--primary-green);
+  }
+}
+
+.spinner-border {
+  &.text-primary {
+    color: var(--primary-green) !important;
+  }
+}
+
+.bg-light-custom {
+  background-color: var(--light-gray) !important;
+}
+
+.text-primary-custom {
+  color: var(--primary-green) !important;
+}
+
+.border-primary-custom {
+  border-color: var(--primary-green) !important;
+}
+
+.bg-light-green {
+  background-color: var(--light-green-bg) !important;
+}
+
+.bg-green-custom {
+  background-color: var(--green-custom) !important;
+}
+
+.text-green-custom {
+  color: var(--green-custom) !important;
+}
+
+.btn-green {
+  background-color: var(--green-custom);
+  border-color: var(--green-custom);
+  color: white;
+  
+  &:hover {
+    background-color: #45a049;
+    border-color: #45a049;
+    color: white;
+  }
+  
+  &:focus {
+    box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+  }
+}
+
+.btn-outline-green {
+  color: var(--green-custom);
+  border-color: var(--green-custom);
+  
+  &:hover {
+    background-color: var(--green-custom);
+    border-color: var(--green-custom);
+    color: white;
+  }
+  
+  &:focus {
+    box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+  }
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+  
+  .card {
+    margin-bottom: 1rem;
+  }
+  
+  .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.slide-in {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.table {
+  background-color: var(--pure-white);
+  
+  th {
+    background-color: var(--light-gray);
+    border-bottom: 2px solid var(--border-gray);
+    font-weight: 600;
+  }
+  
+  td {
+    vertical-align: middle;
+  }
+  
+  .table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(248, 249, 250, 0.5);
+  }
+}
+
+.modal-content {
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.modal-header {
+  background-color: var(--light-gray);
+  border-bottom: 1px solid var(--border-gray);
+  border-radius: 12px 12px 0 0;
+}
+
+.pagination {
+  .page-link {
+    color: var(--primary-green);
+    border-color: var(--border-gray);
+    
+    &:hover {
+      background-color: var(--light-gray);
+      border-color: var(--primary-green);
+    }
+  }
+  
+  .page-item.active .page-link {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+  }
+}
+
+.auth.desktop-auth {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  
+  a {
+    text-decoration: none;
+    color: var(--text-black);
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      color: var(--primary-green);
+      background-color: rgba(76, 175, 80, 0.1);
+    }
+    
+    &.signup {
+      background-color: var(--primary-orange);
+      color: var(--pure-white);
+      
+      &:hover {
+        background-color: #e6940a;
+        color: var(--pure-white);
+      }
+    }
+  }
+  
+  .language-selector {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: 1px solid var(--border-gray);
+    border-radius: 6px;
+    padding: 0.5rem;
+    color: var(--text-black);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+    
+    &:hover {
+      border-color: var(--primary-green);
+      background-color: rgba(76, 175, 80, 0.05);
+    }
+    
+    .language-text {
+      font-size: 0.875rem;
+      font-weight: 500;
+    }
+    
+    .flag-icon {
+      font-size: 1.2rem;
+    }
+  }
+}
+
+.language-menu-mat {
+  .mat-mdc-menu-panel {
+    background: var(--pure-white);
+    border: 1px solid var(--border-gray);
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 120px;
+  }
+  
+  .mat-mdc-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-black);
+    
+    &:hover {
+      background-color: rgba(76, 175, 80, 0.1) !important;
+    }
+    
+    &.active {
+      background-color: rgba(76, 175, 80, 0.2) !important;
+      color: var(--primary-green);
+      font-weight: 600;
+    }
+    
+    .flag-icon {
+      font-size: 1.1rem;
+    }
+    
+    span {
+      font-size: 0.875rem;
+    }
+  }
+}
+
+.btn-outline-primary {
+  color: var(--primary-green);
+  border-color: var(--primary-green);
+  
+  &:hover {
+    background-color: var(--primary-green);
+    border-color: var(--primary-green);
+    color: var(--pure-white);
+  }
+  
+  &:focus {
+    box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+  }
+}
+
+.btn-outline-secondary {
+  color: var(--dark-gray);
+  border-color: var(--dark-gray);
+  
+  &:hover {
+    background-color: var(--dark-gray);
+    border-color: var(--dark-gray);
+    color: var(--pure-white);
+  }
+}

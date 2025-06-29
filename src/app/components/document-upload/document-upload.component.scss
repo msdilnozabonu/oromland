@@ -1,0 +1,62 @@
+.document-upload-container {
+  .drop-zone {
+    border: 2px dashed var(--border-gray);
+    border-radius: 12px;
+    background-color: var(--light-gray);
+    transition: all 0.3s ease;
+    cursor: pointer;
+    
+    &:hover,
+    &.drag-over {
+      border-color: var(--primary-green);
+      background-color: rgba(76, 175, 80, 0.05);
+    }
+  }
+  
+  .file-icon {
+    width: 40px;
+    text-align: center;
+  }
+  
+  .file-info {
+    min-width: 0; // Allow text truncation
+  }
+  
+  .file-actions {
+    display: flex;
+    gap: 0.25rem;
+  }
+  
+  .selected-files,
+  .uploaded-documents {
+    .card {
+      transition: all 0.3s ease;
+      
+      &:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+    }
+  }
+  
+  .empty-state {
+    border: 1px dashed var(--border-gray);
+    border-radius: 12px;
+    background-color: var(--light-gray);
+  }
+}
+
+@media (max-width: 768px) {
+  .document-upload-container {
+    .file-actions {
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .selected-files,
+    .uploaded-documents {
+      .col-md-6 {
+        margin-bottom: 1rem;
+      }
+    }
+  }
+}

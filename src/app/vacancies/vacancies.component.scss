@@ -1,0 +1,481 @@
+// Vacancies Page Styles
+.vacancies-page {
+  min-height: 100vh;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  transition: all 0.3s ease;
+}
+
+// Light Mode Variables (light backgrounds + dark text)
+:host {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --text-primary: #333333;
+  --text-secondary: #6c757d;
+  --border-color: rgba(0, 0, 0, 0.1);
+  --card-bg: #ffffff;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+:host-context(.dark-mode) {
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2d2d2d;
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0b0;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --card-bg: #2d2d2d;
+  --shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+// Hero Section
+.hero-section {
+  background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+  position: relative;
+  overflow: hidden;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.1);
+    z-index: 1;
+  }
+  
+  .container {
+    position: relative;
+    z-index: 2;
+  }
+  
+  .stats-row {
+    margin-top: 2rem;
+    
+    .stat-item {
+      text-align: center;
+      padding: 1rem;
+      
+      h3 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        color: #FFD700;
+      }
+      
+      p {
+        font-size: 0.9rem;
+        opacity: 0.9;
+      }
+    }
+  }
+}
+
+// Filters Section
+.filters-section {
+  margin-top: -2rem;
+  position: relative;
+  z-index: 3;
+  background: var(--bg-secondary);
+  
+  .filters-card {
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    color: var(--text-primary);
+    
+    .form-label {
+      color: var(--text-primary);
+      font-size: 0.9rem;
+    }
+    
+    .input-group-text {
+      background-color: var(--bg-secondary);
+      border-color: var(--border-color);
+      color: var(--text-secondary);
+    }
+    
+    .form-control, .form-select {
+      border-color: var(--border-color);
+      background-color: var(--card-bg);
+      color: var(--text-primary);
+      
+      &::placeholder {
+        color: var(--text-secondary);
+      }
+      
+      &:focus {
+        border-color: #4CAF50;
+        box-shadow: 0 0 0 0.2rem rgba(76, 175, 80, 0.25);
+        background-color: var(--card-bg);
+        color: var(--text-primary);
+      }
+    }
+    
+    .results-count {
+      padding-top: 2rem;
+      font-weight: 600;
+    }
+  }
+}
+
+// Vacancy Cards
+.vacancy-cards {
+  .vacancy-card {
+    transition: all 0.3s ease;
+    
+    &:hover {
+      transform: translateY(-5px);
+      
+      .card {
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15) !important;
+      }
+    }
+    
+    .card {
+      border-radius: 15px;
+      overflow: hidden;
+      transition: all 0.3s ease;
+      background: var(--card-bg);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+    
+    .vacancy-title {
+      color: #2E7D32;
+      font-size: 1.4rem;
+      
+      &:hover {
+        color: #4CAF50;
+      }
+    }
+    
+    .vacancy-meta {
+      font-size: 0.9rem;
+      
+      span {
+        display: flex;
+        align-items: center;
+        
+        i {
+          width: 16px;
+          text-align: center;
+        }
+      }
+    }
+    
+    .salary-badge {
+      font-weight: 600;
+      font-size: 0.9rem;
+      white-space: nowrap;
+    }
+    
+    .vacancy-description {
+      line-height: 1.6;
+    }
+    
+    .requirements-preview {
+      ul {
+        li {
+          font-size: 0.9rem;
+          line-height: 1.5;
+          
+          i.fa-check {
+            font-size: 0.8rem;
+          }
+        }
+      }
+    }
+    
+    .vacancy-footer {
+      border-top: 1px solid var(--border-color);
+      padding-top: 1rem;
+      margin-top: 1rem;
+      
+      .vacancy-dates {
+        small {
+          line-height: 1.4;
+        }
+      }
+      
+      .vacancy-actions {
+        .btn {
+          font-size: 0.9rem;
+          padding: 0.5rem 1rem;
+          
+          &.btn-primary {
+            background-color: #4CAF50;
+            border-color: #4CAF50;
+            
+            &:hover {
+              background-color: #2E7D32;
+              border-color: #2E7D32;
+            }
+          }
+          
+          &.btn-outline-primary {
+            color: #4CAF50;
+            border-color: #4CAF50;
+            
+            &:hover {
+              background-color: #4CAF50;
+              border-color: #4CAF50;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// No Results
+.no-results {
+  padding: 4rem 2rem;
+  
+  i {
+    opacity: 0.5;
+  }
+  
+  h4 {
+    margin-bottom: 1rem;
+  }
+}
+
+// Why Join Us Section
+.why-join-us {
+  background: var(--bg-secondary);
+  
+  .benefit-card {
+    background: var(--card-bg);
+    color: var(--text-primary);
+    border-radius: 15px;
+    box-shadow: var(--shadow);
+    transition: all 0.3s ease;
+    height: 100%;
+    border: 1px solid var(--border-color);
+    
+    &:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .benefit-icon {
+      i {
+        opacity: 0.8;
+      }
+    }
+    
+    h5 {
+      color: #333;
+    }
+    
+    p {
+      line-height: 1.6;
+    }
+  }
+}
+
+// Modal Styles
+.modal {
+  .modal-content {
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    background: var(--card-bg);
+    color: var(--text-primary);
+  }
+  
+  .modal-header {
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-color);
+    border-radius: 15px 15px 0 0;
+    
+    .modal-title {
+      color: #2E7D32;
+    }
+  }
+  
+  .modal-body {
+    padding: 2rem;
+    
+    .vacancy-details {
+      .detail-item {
+        strong {
+          color: var(--text-primary);
+          font-weight: 600;
+        }
+      }
+      
+      .section {
+        h6 {
+          color: #2E7D32;
+          border-bottom: 2px solid #4CAF50;
+          padding-bottom: 0.5rem;
+          margin-bottom: 1rem;
+        }
+        
+        ul {
+          li {
+            line-height: 1.6;
+            margin-bottom: 0.5rem;
+          }
+        }
+      }
+    }
+  }
+  
+  .modal-footer {
+    border-top: 1px solid var(--border-color);
+    padding: 1.5rem 2rem;
+    
+    .btn-primary {
+      background-color: #4CAF50;
+      border-color: #4CAF50;
+      
+      &:hover {
+        background-color: #2E7D32;
+        border-color: #2E7D32;
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .hero-section {
+    .stats-row {
+      .stat-item {
+        padding: 0.5rem;
+        
+        h3 {
+          font-size: 2rem;
+        }
+      }
+    }
+  }
+  
+  .filters-section {
+    .filters-card {
+      .row {
+        .col-md-4, .col-md-3, .col-md-2 {
+          margin-bottom: 1rem;
+        }
+      }
+      
+      .results-count {
+        padding-top: 0;
+        text-align: center;
+      }
+    }
+  }
+  
+  .vacancy-cards {
+    .vacancy-card {
+      .vacancy-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+        
+        .vacancy-salary {
+          margin-top: 1rem;
+          text-align: left !important;
+        }
+      }
+      
+      .vacancy-meta {
+        flex-direction: column;
+        gap: 0.5rem !important;
+      }
+      
+      .vacancy-footer {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 1rem;
+        
+        .vacancy-actions {
+          width: 100%;
+          
+          .btn {
+            width: 100%;
+            margin-bottom: 0.5rem;
+            margin-right: 0 !important;
+          }
+        }
+      }
+    }
+  }
+  
+  .why-join-us {
+    .benefit-card {
+      margin-bottom: 2rem;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-section {
+    .stats-row {
+      flex-direction: column;
+      gap: 1rem !important;
+    }
+  }
+  
+  .vacancy-cards {
+    .vacancy-card {
+      .card-body {
+        padding: 1.5rem !important;
+      }
+      
+      .vacancy-title {
+        font-size: 1.2rem;
+      }
+      
+      .vacancy-meta {
+        font-size: 0.8rem;
+      }
+    }
+  }
+}
+
+// Animation Classes
+.fade-in {
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Utility Classes
+.bg-gradient-green {
+  background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%);
+}
+
+.text-primary {
+  color: #2E7D32 !important;
+}
+
+.btn-primary {
+  background-color: #4CAF50;
+  border-color: #4CAF50;
+  
+  &:hover, &:focus, &:active {
+    background-color: #2E7D32;
+    border-color: #2E7D32;
+  }
+}
+
+.btn-outline-primary {
+  color: #4CAF50;
+  border-color: #4CAF50;
+  
+  &:hover, &:focus, &:active {
+    background-color: #4CAF50;
+    border-color: #4CAF50;
+    color: white;
+  }
+}

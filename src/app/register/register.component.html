@@ -1,0 +1,231 @@
+<div class="container py-5">
+  <div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+      <div class="card shadow-sm">
+        <div class="card-body p-4">
+          <div class="text-center mb-4">
+            <h2 class="h3 fw-bold text-primary-custom">{{ 'Register' | translate }}</h2>
+            <p class="text-muted">Create your account to start booking</p>
+          </div>
+
+          <!-- Error Alert -->
+          <div *ngIf="error" class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            {{ error }}
+          </div>
+
+          <!-- Registration Form -->
+          <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
+            <div class="row">
+              <!-- First Name -->
+              <div class="col-md-6 mb-3">
+                <label for="firstName" class="form-label">{{ 'FirsT Name' | translate }}</label>
+                <input
+                  type="text"
+                  id="firstName"
+                  class="form-control"
+                  formControlName="firstName"
+                  [class.is-invalid]="firstName?.invalid && firstName?.touched"
+                  placeholder="{{ 'John' | translate }}">
+                <div *ngIf="firstName?.invalid && firstName?.touched" class="invalid-feedback">
+                  <div *ngIf="firstName?.errors?.['required']">
+                    {{ 'Required' | translate }}
+                  </div>
+                  <div *ngIf="firstName?.errors?.['minlength']">
+                    {{ 'At least 3 characters' | translate: {min: 2} }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Last Name -->
+              <div class="col-md-6 mb-3">
+                <label for="lastName" class="form-label">{{ 'Last Name' | translate }}</label>
+                <input
+                  type="text"
+                  id="lastName"
+                  class="form-control"
+                  formControlName="lastName"
+                  [class.is-invalid]="lastName?.invalid && lastName?.touched"
+                  placeholder="{{ 'Doe' | translate }}">
+                <div *ngIf="lastName?.invalid && lastName?.touched" class="invalid-feedback">
+                  <div *ngIf="lastName?.errors?.['required']">
+                    {{ 'Required' | translate }}
+                  </div>
+                  <div *ngIf="lastName?.errors?.['minlength']">
+                    {{ 'At least 3 characters' | translate: {min: 2} }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Username -->
+            <div class="mb-3">
+              <label for="username" class="form-label">{{ 'Username' | translate }}</label>
+              <input
+                type="text"
+                id="username"
+                class="form-control"
+                formControlName="username"
+                [class.is-invalid]="username?.invalid && username?.touched"
+                placeholder="{{ 'John1234' | translate }}">
+              <div *ngIf="username?.invalid && username?.touched" class="invalid-feedback">
+                <div *ngIf="username?.errors?.['required']">
+                  {{ 'Required' | translate }}
+                </div>
+                <div *ngIf="username?.errors?.['minlength']">
+                  {{ 'At least 3 characters' | translate: {min: 3} }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Email -->
+            <div class="mb-3">
+              <label for="email" class="form-label">{{ 'Email' | translate }}</label>
+              <input
+                type="email"
+                id="email"
+                class="form-control"
+                formControlName="email"
+                [class.is-invalid]="email?.invalid && email?.touched"
+                placeholder="{{ 'johndoe@example.com' | translate }}">
+              <div *ngIf="email?.invalid && email?.touched" class="invalid-feedback">
+                <div *ngIf="email?.errors?.['required']">
+                  {{ 'Required' | translate }}
+                </div>
+                <div *ngIf="email?.errors?.['email']">
+                  {{ 'Invalid email address' | translate }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Phone Number -->
+            <div class="mb-3">
+              <label for="phoneNumber" class="form-label">{{ 'Phone Number' | translate }}</label>
+              <input
+                type="tel"
+                id="phoneNumber"
+                class="form-control"
+                formControlName="phoneNumber"
+                [class.is-invalid]="phoneNumber?.invalid && phoneNumber?.touched"
+                placeholder="+998901234567">
+              <div *ngIf="phoneNumber?.invalid && phoneNumber?.touched" class="invalid-feedback">
+                <div *ngIf="phoneNumber?.errors?.['required']">
+                  {{ 'Required' | translate }}
+                </div>
+                <div *ngIf="phoneNumber?.errors?.['pattern']">
+                  Please enter a valid phone number
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <!-- Birth Date -->
+              <div class="col-md-6 mb-3">
+                <label for="birthDate" class="form-label">{{ 'Birth Date' | translate }}</label>
+                <input
+                  type="date"
+                  id="birthDate"
+                  class="form-control"
+                  formControlName="birthDate"
+                  [class.is-invalid]="birthDate?.invalid && birthDate?.touched">
+                <div *ngIf="birthDate?.invalid && birthDate?.touched" class="invalid-feedback">
+                  <div *ngIf="birthDate?.errors?.['required']">
+                    {{ 'Required' | translate }}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Gender -->
+              <div class="col-md-6 mb-3">
+                <label for="gender" class="form-label">{{ 'Gender' | translate }}</label>
+                <select
+                  id="gender"
+                  class="form-select"
+                  formControlName="gender"
+                  [class.is-invalid]="gender?.invalid && gender?.touched">
+                  <option value="">Select Gender</option>
+                  <option *ngFor="let g of genders" [value]="g">
+                    {{ g.toLowerCase() | translate }}
+                  </option>
+                </select>
+                <div *ngIf="gender?.invalid && gender?.touched" class="invalid-feedback">
+                  <div *ngIf="gender?.errors?.['required']">
+                    {{ 'Required' | translate }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <!-- Password -->
+              <div class="col-md-6 mb-3">
+                <label for="password" class="form-label">{{ 'Password' | translate }}</label>
+                <input
+                  type="password"
+                  id="password"
+                  class="form-control"
+                  formControlName="password"
+                  [class.is-invalid]="password?.invalid && password?.touched"
+                  placeholder="{{ 'password' | translate }}">
+                <div class="form-text small text-muted mb-1">
+                  Password must contain: uppercase, lowercase, number, and special character (&#64;, #, !, etc.)
+                </div>
+                <div *ngIf="password?.invalid && password?.touched" class="invalid-feedback">
+                  <div *ngIf="password?.errors?.['required']">
+                    {{ 'Required' | translate }}
+                  </div>
+                  <div *ngIf="password?.errors?.['minlength']">
+                    Password must be at least 8 characters long
+                  </div>
+                  <div *ngIf="password?.errors?.['passwordStrength']">
+                    Password must contain uppercase, lowercase, number, and special character (&#64;, #, !, etc.)
+                  </div>
+                </div>
+              </div>
+
+              <!-- Confirm Password -->
+              <div class="col-md-6 mb-3">
+                <label for="confirmPassword" class="form-label">{{ 'Confirm Password' | translate }}</label>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  class="form-control"
+                  formControlName="confirmPassword"
+                  [class.is-invalid]="(confirmPassword?.invalid && confirmPassword?.touched) || registerForm.errors?.['passwordMismatch']"
+                  placeholder="{{ 'password' | translate }}">
+                <div *ngIf="(confirmPassword?.invalid && confirmPassword?.touched) || registerForm.errors?.['passwordMismatch']" class="invalid-feedback">
+                  <div *ngIf="confirmPassword?.errors?.['required']">
+                    {{ 'Required' | translate }}
+                  </div>
+                  <div *ngIf="registerForm.errors?.['passwordMismatch']">
+                    {{ 'Passwords do not match' | translate }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="d-grid mb-3">
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="registerForm.invalid || loading">
+                <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                <i *ngIf="!loading" class="fas fa-user-plus me-2"></i>
+                {{ loading ? 'Creating Account...' : ('Register' | translate) }}
+              </button>
+            </div>
+          </form>
+
+          <!-- Login Link -->
+          <div class="text-center">
+            <p class="mb-0">
+              {{ 'Already have an account?' | translate }}
+              <a routerLink="/login" class="text-decoration-none fw-bold">{{ 'Login' | translate }}</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

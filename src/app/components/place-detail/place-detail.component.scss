@@ -1,0 +1,29 @@
+.place-image-gallery {
+  .main-image {
+    border-radius: 12px;
+  }
+}
+
+.sticky-top {
+  z-index: 1020;
+}
+
+.breadcrumb {
+  background-color: transparent;
+  padding: 0;
+  
+  .breadcrumb-item {
+    a {
+      text-decoration: none;
+      color: var(--primary-green);
+      
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+    
+    &.active {
+      color: var(--text-black);
+    }
+  }
+}

@@ -1,0 +1,261 @@
+<div class="container py-5">
+  <!-- Header -->
+  <section class="text-center mb-5">
+    <h1 class="display-4 fw-bold text-primary-custom mb-3">{{ 'Contact with Us!' | translate }}</h1>
+    <p class="lead text-muted">Get in touch with us - we're here to help!</p>
+  </section>
+
+  <div class="row">
+    <!-- Contact Information -->
+    <div class="col-lg-4 mb-5">
+      <div class="card h-100">
+        <div class="card-body">
+          <h3 class="h5 fw-bold text-primary-custom mb-4">Contact Information</h3>
+          
+          <!-- Phone -->
+          <div class="d-flex align-items-center mb-3">
+            <div class="bg-primary-custom rounded-circle d-flex align-items-center justify-content-center me-3" 
+                 style="width: 40px; height: 40px;">
+              <i class="fas fa-phone fa-sm text-white"></i>
+            </div>
+            <div>
+              <div class="fw-bold">Phone</div>
+              <div class="text-muted">+998 (71) 123-45-67</div>
+            </div>
+          </div>
+
+          <!-- Email -->
+          <div class="d-flex align-items-center mb-3">
+            <div class="bg-success rounded-circle d-flex align-items-center justify-content-center me-3" 
+                 style="width: 40px; height: 40px;">
+              <i class="fas fa-envelope fa-sm text-white"></i>
+            </div>
+            <div>
+              <div class="fw-bold">Email</div>
+              <div class="text-muted">info&#64;oromland.uz</div>
+            </div>
+          </div>
+
+          <!-- Address -->
+          <div class="d-flex align-items-center mb-3">
+            <div class="bg-warning rounded-circle d-flex align-items-center justify-content-center me-3" 
+                 style="width: 40px; height: 40px;">
+              <i class="fas fa-map-marker-alt fa-sm text-dark"></i>
+            </div>
+            <div>
+              <div class="fw-bold">Address</div>
+              <div class="text-muted">Tashkent, Uzbekistan</div>
+            </div>
+          </div>
+
+          <!-- Working Hours -->
+          <div class="d-flex align-items-center mb-3">
+            <div class="bg-info rounded-circle d-flex align-items-center justify-content-center me-3" 
+                 style="width: 40px; height: 40px;">
+              <i class="fas fa-clock fa-sm text-white"></i>
+            </div>
+            <div>
+              <div class="fw-bold">Working Hours</div>
+              <div class="text-muted">Mon - Fri: 9:00 - 18:00</div>
+            </div>
+          </div>
+
+          <!-- Social Media -->
+          <div class="mt-4">
+            <h6 class="fw-bold mb-3">Follow Us</h6>
+            <div class="d-flex gap-2">
+              <a href="#" class="btn btn-outline-primary btn-sm">
+                <i class="fab fa-facebook-f"></i>
+              </a>
+              <a href="https://t.me/oromland" class="btn btn-outline-info btn-sm">
+                <i class="fab fa-telegram-plane"></i>
+              </a>
+              <a href="https://www.instagram.com/orom_land/?utm_source=ig_web_button_share_sheet" class="btn btn-outline-success btn-sm">
+                <i class="fab fa-instagram"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Contact Form -->
+    <div class="col-lg-8">
+      <div class="card">
+        <div class="card-body">
+          <h3 class="h5 fw-bold text-primary-custom mb-4">Send us a Message</h3>
+          
+          <form [formGroup]="contactForm" (ngSubmit)="onSubmit()">
+            <div class="row">
+              <!-- Name -->
+              <div class="col-md-6 mb-3">
+                <label for="name" class="form-label">Full Name</label>
+                <input
+                  type="text"
+                  id="name"
+                  class="form-control"
+                  formControlName="name"
+                  [class.is-invalid]="name?.invalid && (name?.dirty || submitted)"
+                  placeholder="Your full name">
+                <div *ngIf="name?.invalid && (name?.dirty || submitted)" class="invalid-feedback">
+                  <div *ngIf="name?.errors?.['required']">Name is required</div>
+                  <div *ngIf="name?.errors?.['minlength']">Name must be at least 2 characters</div>
+                </div>
+              </div>
+
+              <!-- Email -->
+              <div class="col-md-6 mb-3">
+                <label for="email" class="form-label">Email Address</label>
+                <input
+                  type="email"
+                  id="email"
+                  class="form-control"
+                  formControlName="email"
+                  [class.is-invalid]="email?.invalid && (email?.dirty || submitted)"
+                  placeholder="your.email@example.com">
+                <div *ngIf="email?.invalid && (email?.dirty || submitted)" class="invalid-feedback">
+                  <div *ngIf="email?.errors?.['required']">Email is required</div>
+                  <div *ngIf="email?.errors?.['email']">Please enter a valid email</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <!-- Phone -->
+              <div class="col-md-6 mb-3">
+                <label for="phone" class="form-label">Phone Number</label>
+                <input
+                  type="tel"
+                  id="phone"
+                  class="form-control"
+                  formControlName="phone"
+                  [class.is-invalid]="phone?.invalid && (phone?.dirty || submitted)"
+                  placeholder="+998 90 123 45 67">
+                <div *ngIf="phone?.invalid && (phone?.dirty || submitted)" class="invalid-feedback">
+                  <div *ngIf="phone?.errors?.['required']">Phone number is required</div>
+                </div>
+              </div>
+
+              <!-- Subject -->
+              <div class="col-md-6 mb-3">
+                <label for="subject" class="form-label">Subject</label>
+                <select
+                  id="subject"
+                  class="form-select"
+                  formControlName="subject"
+                  [class.is-invalid]="subject?.invalid && (subject?.dirty || submitted)">
+                  <option value="">Select a subject</option>
+                  <option value="booking">Booking Inquiry</option>
+                  <option value="support">Technical Support</option>
+                  <option value="partnership">Partnership</option>
+                  <option value="feedback">Feedback</option>
+                  <option value="other">Other</option>
+                </select>
+                <div *ngIf="subject?.invalid && (subject?.dirty || submitted)" class="invalid-feedback">
+                  <div *ngIf="subject?.errors?.['required']">Please select a subject</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Message -->
+            <div class="mb-4">
+              <label for="message" class="form-label">Message</label>
+              <textarea
+                id="message"
+                class="form-control"
+                formControlName="message"
+                [class.is-invalid]="message?.invalid && (message?.dirty || submitted)"
+                rows="5"
+                placeholder="Tell us how we can help you..."></textarea>
+              <div *ngIf="message?.invalid && (message?.dirty || submitted)" class="invalid-feedback">
+                <div *ngIf="message?.errors?.['required']">Message is required</div>
+                <div *ngIf="message?.errors?.['minlength']">Message must be at least 10 characters</div>
+              </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="d-grid">
+              <button
+                type="submit"
+                class="btn btn-primary"
+                [disabled]="loading">
+                <span *ngIf="loading" class="spinner-border spinner-border-sm me-2" role="status"></span>
+                <i *ngIf="!loading" class="fas fa-paper-plane me-2"></i>
+                {{ loading ? 'Sending...' : 'Send Message' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ Section -->
+  <section class="mt-5">
+    <div class="text-center mb-4">
+      <h2 class="h3 fw-bold text-primary-custom">Frequently Asked Questions</h2>
+    </div>
+    
+    <div class="row">
+      <div class="col-lg-8 mx-auto">
+        <div class="accordion" id="faqAccordion">
+          <!-- FAQ 1 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                How do I make a booking?
+              </button>
+            </h2>
+            <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                Simply browse our camps and sanatoriums, select your preferred location, choose dates, and complete the booking process with required documents.
+              </div>
+            </div>
+          </div>
+
+          <!-- FAQ 2 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                What documents are required?
+              </button>
+            </h2>
+            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                You'll need to upload identification documents, medical certificates (for sanatoriums), and any specific documents required by the facility.
+              </div>
+            </div>
+          </div>
+
+          <!-- FAQ 3 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                Can I cancel my booking?
+              </button>
+            </h2>
+            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                Yes, you can cancel your booking through your dashboard. Cancellation policies vary by facility and timing.
+              </div>
+            </div>
+          </div>
+
+          <!-- FAQ 4 -->
+          <div class="accordion-item">
+            <h2 class="accordion-header">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq4">
+                Is customer support available 24/7?
+              </button>
+            </h2>
+            <div id="faq4" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+              <div class="accordion-body">
+                Yes, our customer support team is available 24/7 to assist you with any questions or concerns.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,19 @@
+.city-card {
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    border-color: var(--primary-green);
+  }
+}
+
+.city-icon {
+  transition: transform 0.3s ease;
+}
+
+.city-card:hover .city-icon {
+  transform: scale(1.1);
+}

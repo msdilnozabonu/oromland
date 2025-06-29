@@ -1,0 +1,197 @@
+<div class="container py-5" *ngIf="!loading && place">
+  <!-- Header -->
+  <div class="row align-items-center mb-4">
+    <div class="col">
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+          <li class="breadcrumb-item"><a routerLink="/">Home</a></li>
+          <li class="breadcrumb-item">
+            <a [routerLink]="placeType === 'CAMP' ? '/camps' : '/sanatoriums'">
+              {{ placeType === 'CAMP' ? 'Camps' : 'Sanatoriums' }}
+            </a>
+          </li>
+          <li class="breadcrumb-item">
+            <a [routerLink]="getBackRoute()">{{ place.city?.name }}</a>
+          </li>
+          <li class="breadcrumb-item active">{{ place.name }}</li>
+        </ol>
+      </nav>
+    </div>
+    <div class="col-auto">
+      <a [routerLink]="getBackRoute()" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>
+        {{ 'Back' | translate }}
+      </a>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Main Content -->
+    <div class="col-lg-8">
+      <!-- Place Images -->
+      <div class="card mb-4">
+        <div class="card-body p-0">
+          <div class="place-image-gallery">
+            <div class="main-image bg-light-custom d-flex align-items-center justify-content-center" style="height: 400px;">
+              <i class="fas fa-image fa-5x text-muted"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Place Info -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div>
+              <h1 class="h2 fw-bold text-primary-custom">{{ place.name }}</h1>
+              <div class="d-flex align-items-center mb-2">
+                <i class="fas fa-map-marker-alt text-muted me-2"></i>
+                <span class="text-muted">{{ place.city?.name }}</span>
+              </div>
+            </div>
+            <span class="badge bg-info fs-6">{{ place.type | titlecase }}</span>
+          </div>
+
+          <!-- Rating -->
+          <div class="d-flex align-items-center mb-3">
+            <div class="text-warning me-2">
+              <i *ngFor="let star of getStarArray(getAverageRating())" 
+                 class="fas fa-star"></i>
+              <i *ngFor="let star of getStarArray(5 - getAverageRating())" 
+                 class="far fa-star"></i>
+            </div>
+            <span class="fw-bold me-2">{{ getAverageRating() }}</span>
+            <span class="text-muted">({{ feedbacks.length }} reviews)</span>
+          </div>
+
+          <!-- Description -->
+          <div class="mb-4">
+            <h5>{{ 'Description' | translate }}</h5>
+            <p class="text-muted">{{ getPlaceDescription() }}</p>
+          </div>
+
+          <!-- Amenities -->
+          <div class="mb-4" *ngIf="place.amenities && place.amenities.length > 0">
+            <h5>{{ 'Amenities' | translate }}</h5>
+            <div class="row">
+              <div class="col-md-6" *ngFor="let amenity of place.amenities">
+                <div class="d-flex align-items-center mb-2">
+                  <i class="fas fa-check text-success me-2"></i>
+                  <span>{{ amenity }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Available Groups -->
+          <div class="mb-4" *ngIf="groups.length > 0">
+            <h5>Available Groups</h5>
+            <div class="row g-3">
+              <div class="col-md-6" *ngFor="let group of groups">
+                <div class="card border">
+                  <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                      <span class="badge bg-secondary">{{ group.gender }}</span>
+                      <span class="text-success fw-bold">{{ group.availableSpots }} spots left</span>
+                    </div>
+                    <p class="mb-1">
+                      <strong>Age:</strong> {{ group.ageRangeStart }} - {{ group.ageRangeEnd }} years
+                    </p>
+                    <p class="mb-0">
+                      <strong>Capacity:</strong> {{ group.totalCapacity }} total
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seasons -->
+          <div class="mb-4" *ngIf="place.availableSeasons && place.availableSeasons.length > 0">
+            <h5>{{ 'Available Seasons' | translate }}</h5>
+            <div class="d-flex flex-wrap gap-2">
+              <span *ngFor="let season of place.availableSeasons" 
+                    class="badge bg-warning text-dark">
+                {{ season | titlecase }}
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Reviews -->
+      <div class="card" *ngIf="feedbacks.length > 0">
+        <div class="card-header">
+          <h5 class="mb-0">Recent Reviews</h5>
+        </div>
+        <div class="card-body">
+          <div *ngFor="let feedback of feedbacks" class="mb-3 pb-3 border-bottom">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div>
+                <strong>{{ feedback.user?.firstName }} {{ feedback.user?.lastName }}</strong>
+                <div class="text-warning">
+                  <i *ngFor="let star of getStarArray(feedback.rating)" 
+                     class="fas fa-star"></i>
+                  <i *ngFor="let star of getStarArray(5 - feedback.rating)" 
+                     class="far fa-star"></i>
+                </div>
+              </div>
+              <small class="text-muted">{{ feedback.createdAt | date:'short' }}</small>
+            </div>
+            <p class="text-muted mb-0">{{ feedback.comment }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Booking Sidebar -->
+    <div class="col-lg-4">
+      <div class="card sticky-top" style="top: 100px;">
+        <div class="card-body">
+          <div class="text-center mb-4">
+            <div class="h3 text-primary-custom fw-bold" *ngIf="place.price">
+              ${{ place.price }}
+              <small class="text-muted fs-6">/week</small>
+            </div>
+          </div>
+
+          <!-- Availability Info -->
+          <div class="mb-4">
+            <div class="d-flex justify-content-between mb-2">
+              <span>{{ 'Available Spots' | translate }}:</span>
+              <span class="fw-bold text-success">{{ getAvailableSpots() }}</span>
+            </div>
+            <div class="d-flex justify-content-between mb-2">
+              <span>{{ 'Capacity' | translate }}:</span>
+              <span class="fw-bold">{{ getTotalCapacity() }}</span>
+            </div>
+          </div>
+
+          <!-- Book Button -->
+          <div class="d-grid mb-3">
+            <button class="btn btn-primary btn-lg" (click)="bookPlace()">
+              {{ 'places.bookPlace' | translate }}
+            </button>
+          </div>
+
+          <!-- Contact Info -->
+          <div class="text-center">
+            <small class="text-muted">
+              Need help? <a href="/contacts" class="text-decoration-none">Contact us</a>
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loading State -->
+<div *ngIf="loading" class="container py-5">
+  <div class="text-center">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">{{ 'common.loading' | translate }}</span>
+    </div>
+  </div>
+</div>

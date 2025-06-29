@@ -1,0 +1,140 @@
+<div class="document-upload-container">
+  <!-- Upload Area -->
+  <div class="upload-area mb-4">
+    <div 
+      class="drop-zone"
+      [class.drag-over]="dragOver"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)">
+      
+      <div class="text-center py-4">
+        <i class="fas fa-cloud-upload-alt fa-3x text-primary-custom mb-3"></i>
+        <h5>{{ 'documentsitle' | translate }}</h5>
+        <p class="text-muted mb-3">
+          {{ 'documents.upload.dragDrop' | translate }}
+        </p>
+        
+        <input 
+          type="file" 
+          id="fileInput" 
+          class="d-none" 
+          multiple 
+          [accept]="allowedTypes.join(',')"
+          (change)="onFileSelect($event)">
+        
+        <label for="fileInput" class="btn btn-outline-primary">
+          <i class="fas fa-folder-open me-2"></i>
+          {{ 'documents.upload.browse' | translate }}
+        </label>
+        
+        <div class="mt-3">
+          <small class="text-muted">
+            {{ 'documents.upload.allowedTypes' | translate }}: PNG, JPEG, PDF, DOC, DOCX<br>
+            {{ 'documents.upload.maxSize' | translate }}: {{ maxFileSize / (1024 * 1024) }}MB<br>
+            {{ 'documents.upload.maxFiles' | translate }}: {{ maxFiles }}
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Selected Files -->
+  <div *ngIf="selectedFiles.length > 0" class="selected-files mb-4">
+    <h6 class="fw-bold mb-3">{{ 'documents.upload.selectedFiles' | translate }} ({{ selectedFiles.length }})</h6>
+    
+    <div class="row g-3">
+      <div *ngFor="let file of selectedFiles; let i = index" class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <div class="file-icon me-3">
+                <i [class]="getFileIcon(file.name)" style="font-size: 1.5rem;"></i>
+              </div>
+              <div class="file-info flex-grow-1">
+                <div class="fw-bold text-truncate" [title]="file.name">{{ file.name }}</div>
+                <small class="text-muted">{{ getFileSize(file.size) }}</small>
+              </div>
+              <button 
+                type="button" 
+                class="btn btn-sm btn-outline-danger"
+                (click)="removeFile(i)"
+                [title]="'common.remove' | translate">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload Button -->
+    <div class="text-center mt-3">
+      <button 
+        type="button" 
+        class="btn btn-primary"
+        (click)="uploadFiles()"
+        [disabled]="uploading || selectedFiles.length === 0">
+        <span *ngIf="uploading" class="spinner-border spinner-border-sm me-2"></span>
+        <i *ngIf="!uploading" class="fas fa-upload me-2"></i>
+        {{ uploading ? ('documents.upload.uploading' | translate) : ('documents.upload.upload' | translate) }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Uploaded Documents -->
+  <div *ngIf="uploadedDocuments.length > 0" class="uploaded-documents">
+    <h6 class="fw-bold mb-3">{{ 'documents.upload.uploadedFiles' | translate }} ({{ uploadedDocuments.length }})</h6>
+    
+    <div class="row g-3">
+      <div *ngFor="let document of uploadedDocuments" class="col-md-6">
+        <div class="card">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <div class="file-icon me-3">
+                <i [class]="getFileIcon(document.fileName)" style="font-size: 1.5rem;"></i>
+              </div>
+              <div class="file-info flex-grow-1">
+                <div class="fw-bold text-truncate" [title]="document.fileName">{{ document.fileName }}</div>
+                <div class="d-flex align-items-center mt-1">
+                  <span class="badge me-2" [class]="getDocumentStatusBadge(document.status)">
+                    {{ document.status | titlecase }}
+                  </span>
+                  <small class="text-muted">{{ document.uploadDate | date:'short' }}</small>
+                </div>
+                <div *ngIf="document.comment" class="mt-2">
+                  <small class="text-muted">
+                    <i class="fas fa-comment me-1"></i>
+                    {{ document.comment }}
+                  </small>
+                </div>
+              </div>
+              <div class="file-actions">
+                <button 
+                  type="button" 
+                  class="btn btn-sm btn-outline-primary me-2"
+                  [title]="'common.download' | translate">
+                  <i class="fas fa-download"></i>
+                </button>
+                <button 
+                  type="button" 
+                  class="btn btn-sm btn-outline-danger"
+                  (click)="removeUploadedDocument(document.id)"
+                  [title]="'common.delete' | translate">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div *ngIf="uploadedDocuments.length === 0 && selectedFiles.length === 0" class="empty-state text-center py-4">
+    <i class="fas fa-file-upload fa-3x text-muted mb-3"></i>
+    <h6 class="text-muted">{{ 'documents.upload.noFiles' | translate }}</h6>
+    <p class="text-muted">{{ 'documents.upload.noFilesDesc' | translate }}</p>
+  </div>
+</div>

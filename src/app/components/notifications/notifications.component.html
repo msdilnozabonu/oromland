@@ -1,0 +1,45 @@
+<div class="notifications-container">
+  <div 
+    *ngFor="let notification of notifications; trackBy: trackByNotificationId" 
+    class="notification-item"
+    [class]="'alert ' + getNotificationClass(notification.type)"
+    role="alert">
+    
+    <div class="d-flex align-items-start">
+      <!-- Icon -->
+      <div class="notification-icon me-3">
+        <i [class]="getNotificationIcon(notification.type)" style="font-size: 1.25rem;"></i>
+      </div>
+      
+      <!-- Content -->
+      <div class="notification-content flex-grow-1">
+        <div class="notification-title fw-bold mb-1">
+          {{ notification.title }}
+        </div>
+        <div class="notification-message">
+          {{ notification.message }}
+        </div>
+        
+        <!-- Actions -->
+        <div *ngIf="notification.actions && notification.actions.length > 0" class="notification-actions mt-2">
+          <button 
+            *ngFor="let action of notification.actions"
+            type="button"
+            class="btn btn-sm me-2"
+            [class]="getActionButtonClass(action.style)"
+            (click)="executeAction(action)">
+            {{ action.label }}
+          </button>
+        </div>
+      </div>
+      
+      <!-- Close Button -->
+      <button 
+        type="button" 
+        class="btn-close" 
+        (click)="removeNotification(notification.id)"
+        [attr.aria-label]="'Close Notification' | translate">
+      </button>
+    </div>
+  </div>
+</div>

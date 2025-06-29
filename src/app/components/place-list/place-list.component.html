@@ -1,0 +1,113 @@
+<div class="container py-5">
+  <!-- Header -->
+  <div class="row align-items-center mb-4">
+    <div class="col">
+      <h1 class="display-6 fw-bold text-primary-custom">
+        {{ getPlaceTypeName() | translate }} in {{ cityName }}
+      </h1>
+      <p class="text-muted">Discover the best places for your perfect getaway</p>
+    </div>
+    <div class="col-auto">
+      <a [routerLink]="getBackRoute()" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left me-2"></i>
+        {{ 'Back' | translate }}
+      </a>
+    </div>
+  </div>
+
+  <!-- Search Bar -->
+  <div class="row mb-4">
+    <div class="col-md-6">
+      <div class="input-group">
+        <span class="input-group-text">
+          <i class="fas fa-search"></i>
+        </span>
+        <input
+          type="text"
+          class="form-control"
+          [(ngModel)]="searchTerm"
+          placeholder="{{ 'Search' | translate }}...">
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status">
+      <span class="visually-hidden">{{ 'Loading' | translate }}</span>
+    </div>
+  </div>
+
+  <!-- Places Grid -->
+  <div *ngIf="!loading" class="row g-4">
+    <div *ngFor="let place of getFilteredPlaces()" class="col-md-6 col-lg-4">
+      <div class="card h-100 place-card">
+        <!-- Place Image -->
+        <div class="card-img-top bg-light-custom d-flex align-items-center justify-content-center" style="height: 200px;">
+          <i class="fas fa-image fa-3x text-muted"></i>
+        </div>
+
+        <div class="card-body">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <h5 class="card-title">{{ place.name }}</h5>
+            <span class="badge bg-info">{{ place.type | titlecase }}</span>
+          </div>
+
+          <p class="card-text text-muted">
+            {{ getPlaceDescription(place) | slice:0:100 }}
+            <span *ngIf="getPlaceDescription(place).length > 100">...</span>
+          </p>
+
+          <!-- Rating -->
+          <div class="d-flex align-items-center mb-2">
+            <div class="text-warning me-2">
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+              <i class="fas fa-star"></i>
+            </div>
+            <small class="text-muted">(4.8)</small>
+          </div>
+
+          <!-- Amenities -->
+          <div class="mb-3" *ngIf="place.amenities && place.amenities.length > 0">
+            <div class="d-flex flex-wrap gap-1">
+              <span *ngFor="let amenity of place.amenities.slice(0, 3)" 
+                    class="badge bg-light text-dark">
+                {{ amenity }}
+              </span>
+              <span *ngIf="place.amenities.length > 3" 
+                    class="badge bg-light text-dark">
+                +{{ place.amenities.length - 3 }} more
+              </span>
+            </div>
+          </div>
+
+          <!-- Price -->
+          <div class="d-flex justify-content-between align-items-center mb-3" *ngIf="place.price">
+            <div>
+              <span class="h5 text-primary-custom fw-bold">${{ place.price }}</span>
+              <small class="text-muted">/week</small>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer bg-transparent">
+          <button class="btn btn-primary w-100" (click)="viewPlace(place)">
+            {{ 'View' | translate }} {{ 'details' | translate }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- No Places Found -->
+  <div *ngIf="!loading && getFilteredPlaces().length === 0" class="text-center py-5">
+    <div class="mb-3">
+      <i class="fas fa-search fa-3x text-muted"></i>
+    </div>
+    <h4 class="text-muted">{{ 'No oPlaces Found' | translate }}</h4>
+    <p class="text-muted">Try adjusting your search criteria or check back later.</p>
+  </div>
+</div>

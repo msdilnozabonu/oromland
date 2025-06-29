@@ -1,0 +1,260 @@
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-light sticky-top navbar-blur" [class.dark-mode]="isDarkMode">
+  <div class="container">
+    <img src="/favicon1.ico" alt="logo" style="width: 80px; height: 48px; margin-right: 12px; object-fit: contain;">
+    <a class="navbar-brand" routerLink="/">
+      <strong>Oromland</strong>
+    </a>
+
+    <button 
+      class="navbar-toggler" 
+      type="button" 
+      (click)="toggleMenu()"
+      [attr.aria-expanded]="isMenuOpen">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" [class.show]="isMenuOpen">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}">
+            {{ 'Home' | translate }}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/camps" routerLinkActive="active">
+            {{ 'Camps' | translate }}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/sanatoriums" routerLinkActive="active">
+            {{ 'Sanatoriums' | translate }}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/vacancies" routerLinkActive="active">
+            {{ 'Vacancies' | translate }}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/about" routerLinkActive="active">
+            {{ 'About Us' | translate }}
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" routerLink="/contacts" routerLinkActive="active">
+            {{ 'Contacts' | translate }}
+          </a>
+        </li>
+      </ul>
+
+      <div class="d-flex align-items-center flex-wrap">
+        <div class="auth">
+          <a [routerLink]="['/login']">Login</a>
+          <a (click)="goToAuth()" class="signup" style="cursor: pointer;">Sign up</a>
+          
+          <!-- Dark Mode Toggle -->
+          <button class="dark-mode-toggle" (click)="toggleDarkMode()" [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
+            <i [class]="!isDarkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
+          </button>
+          
+          <button mat-icon-button [matMenuTriggerFor]="languageMenu" class="language-selector">
+            <ng-container *ngTemplateOutlet="flagImage; context: {$implicit: activeLang}"></ng-container>
+            <span class="language-text">{{getLanguageShortName(activeLang)}}</span>
+          </button>
+        </div>
+
+        <!-- Language Menu -->
+        <mat-menu #languageMenu="matMenu" class="language-menu-mat">
+          <button mat-menu-item *ngFor="let lang of languages" 
+                  (click)="selectLanguage(lang.code)"
+                  [class.active]="activeLang === lang.code">
+            <ng-container *ngTemplateOutlet="flagImage; context: {$implicit: lang.code}"></ng-container>
+            <span>{{getLanguageShortName(lang.code)}}</span>
+          </button>
+        </mat-menu>
+
+        <!-- Flag Image Template -->
+        <ng-template #flagImage let-lang>
+          <img [src]="translationService.getFlagCode(lang)" 
+               [alt]="lang + ' flag'" 
+               class="flag-icon"
+               onerror="this.style.display='none'">
+        </ng-template>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<main class="min-vh-100" [class.dark-mode]="isDarkMode">
+  <router-outlet></router-outlet>
+</main>
+
+<!-- Footer -->
+<footer class="footer-section bg-dark text-white py-5 mt-5" [class.dark-mode]="isDarkMode">
+  <div class="container">
+    <div class="row g-4">
+      <!-- Company Info -->
+      <div class="col-lg-4 col-md-6">
+        <div class="footer-brand mb-4">
+          <img src="/favicon1.ico" alt="Oromland Logo" class="footer-logo mb-3">
+          <h5 class="text-white fw-bold">Oromland</h5>
+          <p class="text-light opacity-75 mb-4">
+            {{ 'Discover the best camps and sanatoriums across Uzbekistan. Your perfect getaway awaits!' | translate }}
+          </p>
+        </div>
+        
+        <!-- Contact Info -->
+        <div class="footer-contact mb-4">
+          <div class="contact-item mb-2">
+            <i class="fas fa-phone text-success me-2"></i>
+            <span>+998 (71) 123-45-67</span>
+          </div>
+          <div class="contact-item mb-2">
+            <i class="fas fa-envelope text-success me-2"></i>
+            <span>info&#64;oromland.uz</span>
+          </div>
+          <div class="contact-item">
+            <i class="fas fa-map-marker-alt text-success me-2"></i>
+            <span>Tashkent, Uzbekistan</span>
+          </div>
+        </div>
+
+        <!-- Social Links -->
+        <div class="footer-social">
+          <h6 class="text-white mb-3">{{ 'Follow Us' | translate }}</h6>
+          <div class="social-links d-flex gap-3">
+            <a href="#" class="social-link social-link--facebook" title="Facebook">
+              <i class="fab fa-facebook-f"></i>
+            </a>
+            <a href="https://www.instagram.com/orom_land/?utm_source=ig_web_button_share_sheet" 
+               class="social-link social-link--instagram" title="Instagram">
+              <i class="fab fa-instagram"></i>
+            </a>
+            <a href="#" class="social-link social-link--twitter" title="Twitter">
+              <i class="fab fa-twitter"></i>
+            </a>
+            <a href="https://t.me/oromland" class="social-link social-link--telegram" title="Telegram">
+              <i class="fab fa-telegram-plane"></i>
+            </a>
+            <a href="#" class="social-link social-link--youtube" title="YouTube">
+              <i class="fab fa-youtube"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Links -->
+      <div class="col-lg-2 col-md-6">
+        <h6 class="text-white fw-bold mb-3">{{ 'Quick Links' | translate }}</h6>
+        <ul class="footer-links list-unstyled">
+          <li class="mb-2">
+            <a routerLink="/" class="footer-link">
+              <i class="fas fa-home me-2"></i>{{ 'Home' | translate }}
+            </a>
+          </li>
+          <li class="mb-2">
+            <a routerLink="/camps" class="footer-link">
+              <i class="fas fa-campground me-2"></i>{{ 'Camps' | translate }}
+            </a>
+          </li>
+          <li class="mb-2">
+            <a routerLink="/sanatoriums" class="footer-link">
+              <i class="fas fa-spa me-2"></i>{{ 'Sanatoriums' | translate }}
+            </a>
+          </li>
+          <li class="mb-2">
+            <a routerLink="/vacancies" class="footer-link">
+              <i class="fas fa-briefcase me-2"></i>{{ 'Careers' | translate }}
+            </a>
+          </li>
+          <li class="mb-2">
+            <a routerLink="/about" class="footer-link">
+              <i class="fas fa-info-circle me-2"></i>{{ 'About Us' | translate }}
+            </a>
+          </li>
+          <li>
+            <a routerLink="/contacts" class="footer-link">
+              <i class="fas fa-envelope me-2"></i>{{ 'Contact' | translate }}
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Services -->
+      <div class="col-lg-3 col-md-6">
+        <h6 class="text-white fw-bold mb-3">{{ 'Our Services' | translate }}</h6>
+        <ul class="footer-links list-unstyled">
+          <li class="mb-2">
+            <a href="#" class="footer-link">
+              <i class="fas fa-child me-2"></i>{{ 'Kids Camps' | translate }}
+            </a>
+          </li>
+          <li class="mb-2">
+            <a href="#" class="footer-link">
+              <i class="fas fa-users me-2"></i>{{ 'Family Retreats' | translate }}
+            </a>
+          </li>
+          <li class="mb-2">
+            <a href="#" class="footer-link">
+              <i class="fas fa-heartbeat me-2"></i>{{ 'Health Programs' | translate }}
+            </a>
+          </li>
+          <li class="mb-2">
+            <a href="#" class="footer-link">
+              <i class="fas fa-dumbbell me-2"></i>{{ 'Fitness Activities' | translate }}
+            </a>
+          </li>
+          <li class="mb-2">
+            <a href="#" class="footer-link">
+              <i class="fas fa-graduation-cap me-2"></i>{{ 'Educational Programs' | translate }}
+            </a>
+          </li>
+          <li>
+            <a href="#" class="footer-link">
+              <i class="fas fa-calendar-alt me-2"></i>{{ 'Event Planning' | translate }}
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Newsletter -->
+      <div class="col-lg-3 col-md-6">
+        <h6 class="text-white fw-bold mb-3">{{ 'Stay Updated' | translate }}</h6>
+        <p class="text-light opacity-75 mb-3">
+          {{ 'Subscribe to our newsletter for the latest updates and special offers.' | translate }}
+        </p>
+        
+        <div class="newsletter-form">
+          <div class="input-group mb-3">
+            <input type="email" 
+                   class="form-control" 
+                   placeholder="{{ 'Enter your email' | translate }}"
+                   aria-label="Email">
+            <button class="btn btn-success" type="button">
+              <i class="fas fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer Bottom -->
+    <hr class="footer-divider my-4">
+    <div class="row align-items-center">
+      <div class="col-md-6">
+        <p class="text-light opacity-75 mb-0">
+          &copy; 2025 Oromland. {{ 'All rights reserved.' | translate }}
+        </p>
+      </div>
+      <div class="col-md-6">
+        <div class="footer-bottom-links text-md-end">
+          <a href="#" class="footer-link me-3">{{ 'Privacy Policy' | translate }}</a>
+          <a href="#" class="footer-link me-3">{{ 'Terms of Service' | translate }}</a>
+          <a href="#" class="footer-link">{{ 'Cookie Policy' | translate }}</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
