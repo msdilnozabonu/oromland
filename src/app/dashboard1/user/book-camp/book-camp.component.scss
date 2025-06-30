@@ -1,0 +1,317 @@
+.book-camp-container {
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: #ffffff;
+  min-height: 100vh;
+
+  .header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid #e8f5e8;
+
+    .back-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 50%;
+      background: #4CAF50;
+      color: white;
+      cursor: pointer;
+      margin-right: 1rem;
+      transition: all 0.3s ease;
+
+      &:hover {
+        background: #45a049;
+        transform: scale(1.05);
+      }
+
+      i {
+        font-size: 1.2rem;
+      }
+    }
+
+    h1 {
+      color: #2d3748;
+      margin: 0;
+      font-size: 2rem;
+      font-weight: 600;
+    }
+  }
+
+  .booking-form-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+
+    ::ng-deep .mat-horizontal-stepper-header-container {
+      border-bottom: 2px solid #e8f5e8;
+      background: #f0fdf4;
+    }
+
+    ::ng-deep .mat-step-header {
+      .mat-step-icon {
+        background-color: #4CAF50;
+      }
+
+      .mat-step-icon-selected {
+        background-color: #4CAF50;
+      }
+
+      .mat-step-label.mat-step-label-active {
+        color: #4CAF50;
+      }
+    }
+
+    .step-form {
+      padding: 2rem;
+
+      .form-section {
+        margin-bottom: 2rem;
+
+        h3 {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          color: #2d3748;
+          margin-bottom: 1.5rem;
+          font-size: 1.3rem;
+          font-weight: 600;
+
+          i {
+            color: #4CAF50;
+            font-size: 1.4rem;
+          }
+        }
+
+        .form-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1rem;
+          margin-bottom: 1rem;
+
+          &.single-column {
+            grid-template-columns: 1fr;
+          }
+
+          .full-width {
+            grid-column: 1 / -1;
+          }
+
+          ::ng-deep .mat-mdc-form-field {
+            .mat-mdc-form-field-focus-overlay {
+              background-color: rgba(76, 175, 80, 0.1);
+            }
+
+            .mat-mdc-form-field-outline {
+              .mdc-notched-outline__leading,
+              .mdc-notched-outline__notch,
+              .mdc-notched-outline__trailing {
+                border-color: #e8f5e8;
+              }
+            }
+
+            &.mat-focused .mat-mdc-form-field-outline {
+              .mdc-notched-outline__leading,
+              .mdc-notched-outline__notch,
+              .mdc-notched-outline__trailing {
+                border-color: #4CAF50;
+              }
+            }
+
+            .mat-mdc-form-field-label {
+              color: #6b7280;
+            }
+
+            &.mat-focused .mat-mdc-form-field-label {
+              color: #4CAF50;
+            }
+          }
+        }
+      }
+
+      .document-upload-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+
+        .document-item {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          padding: 1.5rem;
+          border: 2px dashed #e8f5e8;
+          border-radius: 12px;
+          transition: all 0.3s ease;
+
+          &:hover {
+            border-color: #4CAF50;
+            background: rgba(76, 175, 80, 0.05);
+          }
+
+          .document-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 50px;
+            height: 50px;
+            background: #4CAF50;
+            border-radius: 50%;
+            color: white;
+
+            i {
+              font-size: 1.5rem;
+            }
+          }
+
+          .document-info {
+            flex: 1;
+
+            h4 {
+              margin: 0 0 0.5rem 0;
+              color: #2d3748;
+              font-weight: 600;
+            }
+
+            p {
+              margin: 0;
+              color: #6b7280;
+              font-size: 0.9rem;
+            }
+          }
+
+          .upload-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+
+            &:hover {
+              background: #45a049;
+              transform: translateY(-1px);
+            }
+          }
+        }
+      }
+
+      .step-actions {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 2rem;
+        padding-top: 1rem;
+        border-top: 1px solid #e8f5e8;
+
+        .back-btn-step {
+          color: #6b7280;
+          border: 1px solid #e8f5e8;
+          padding: 0.75rem 1.5rem;
+          border-radius: 8px;
+        }
+
+        .next-btn,
+        .submit-btn {
+          background: #4CAF50;
+          color: white;
+          padding: 0.75rem 2rem;
+          border-radius: 8px;
+          border: none;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+
+          &:hover:not(:disabled) {
+            background: #45a049;
+            transform: translateY(-1px);
+          }
+
+          &:disabled {
+            background: #cbd5e0;
+            cursor: not-allowed;
+          }
+
+          i.fa-spin {
+            animation: spin 1s linear infinite;
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .book-camp-container {
+    padding: 0.5rem;
+
+    .header {
+      h1 {
+        font-size: 1.5rem;
+      }
+    }
+
+    .booking-form-card {
+      .step-form {
+        padding: 1rem;
+
+        .form-section {
+          .form-row {
+            grid-template-columns: 1fr;
+            gap: 0.5rem;
+          }
+        }
+
+        .document-upload-grid {
+          grid-template-columns: 1fr;
+          gap: 1rem;
+
+          .document-item {
+            flex-direction: column;
+            text-align: center;
+            padding: 1rem;
+          }
+        }
+
+        .step-actions {
+          flex-direction: column;
+          gap: 1rem;
+
+          .back-btn-step,
+          .next-btn,
+          .submit-btn {
+            width: 100%;
+            justify-content: center;
+          }
+        }
+      }
+    }
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+::ng-deep .snackbar-success {
+  background: #4CAF50 !important;
+  color: white !important;
+}
+
+::ng-deep .snackbar-error {
+  background: #dc3545 !important;
+  color: white !important;
+}

@@ -10,6 +10,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatStepperModule } from '@angular/material/stepper';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators, FormsModule } from '@angular/forms';
+import { BookingService } from '../../../services/booking.service';
 
 interface BookingData {
   placeId?: string;
@@ -418,7 +419,8 @@ export class BookingDialogComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private dialogRef: MatDialogRef<BookingDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: BookingData
+    @Inject(MAT_DIALOG_DATA) public data: BookingData,
+    private bookingService: BookingService
   ) {
     this.bookingForm = this.fb.group({
       placeId: [data?.placeId || '', Validators.required],
@@ -482,17 +484,37 @@ export class BookingDialogComponent implements OnInit {
 
   confirmBooking(): void {
     this.isBooking = true;
-    
-    setTimeout(() => {
-      const bookingData = {
-        ...this.bookingForm.value,
-        ...this.guestForm.value,
-        additionalGuests: this.additionalGuests,
-        total: this.calculateTotal(),
-        place: this.getSelectedPlace()
-      };
-      
-      this.dialogRef.close(bookingData);
-    }, 2000);
+    const bookingData = {
+      ...this.bookingForm.value,
+      ...this.guestForm.value,
+      additionalGuests: this.additionalGuests,
+      total: this.calculateTotal(),
+      place: this.getSelectedPlace()
+    };
+    const place = this.getSelectedPlace();
+    if (place?.type === 'camp') {
+      this.bookingService.createCampBooking(bookingData).subscribe({
+        next: (res) => {
+          this.isBooking = false;
+          this.dialogRef.close(res);
+        },
+        error: () => {
+          this.isBooking = false;
+        }
+      });
+    } else if (place?.type === 'sanatorium') {
+      this.bookingService.createSanatoriumBooking(bookingData).subscribe({
+        next: (res) => {
+          this.isBooking = false;
+          this.dialogRef.close(res);
+        },
+        error: () => {
+          this.isBooking = false;
+        }
+      });
+    } else {
+      this.isBooking = false;
+      this.dialogRef.close();
+    }
   }
 }

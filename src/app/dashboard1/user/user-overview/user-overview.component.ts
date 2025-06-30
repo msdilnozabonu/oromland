@@ -13,6 +13,7 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../../services/auth.service';
+import { BookingService } from '../../../services/booking.service';
 import { BookingDialogComponent } from '../booking-dialog/booking-dialog.component';
 import { FeedbackDialogComponent } from '../feedback-dialog/feedback-dialog.component';
 import { ImageCardComponent, ImageCardData } from '../../../shared/components/image-card/image-card.component';
@@ -41,6 +42,25 @@ interface RecentActivity {
   ],
   template: `
     <div class="user-overview-container">
+      <!-- Burger Menu Button -->
+      <button class="burger-menu-btn" (click)="toggleBurgerMenu()">
+        <span class="burger-line"></span>
+        <span class="burger-line"></span>
+        <span class="burger-line"></span>
+      </button>
+
+      <!-- Sidebar Burger Menu -->
+      <nav class="sidebar" [class.open]="isBurgerMenuOpen">
+        <button class="close-btn" (click)="toggleBurgerMenu()">&times;</button>
+        <ul>
+          <li><a (click)="goToCamps()">Camps</a></li>
+          <li><a (click)="goToSanatoriums()">Sanatoriums</a></li>
+          <li><a (click)="goToBookings()">My Bookings</a></li>
+          <li><a (click)="goToProfile()">Profile</a></li>
+          <li><a (click)="openFeedbackDialog()">Feedback</a></li>
+        </ul>
+      </nav>
+
       <!-- Welcome Section -->
       <div class="welcome-section">
         <div class="welcome-card">
@@ -48,8 +68,8 @@ interface RecentActivity {
             <div class="welcome-icon">
               <i class="material-icons">waving_hand</i>
             </div>
-            <h1 class="welcome-title">Welcome back, {{userName}}!</h1>
-            <p class="welcome-subtitle">Ready to explore amazing places?</p>
+            <h1 class="welcome-title">{{ hasBookings ? 'Welcome back, ' + userName + '!' : 'Welcome!' }}</h1>
+            <p class="welcome-subtitle" *ngIf="hasBookings">Ready to explore amazing places?</p>
             
             <!-- Show different content based on user status -->
             <div *ngIf="!hasBookings" class="no-bookings-section">
@@ -63,11 +83,7 @@ interface RecentActivity {
               <div class="action-buttons">
                 <button mat-raised-button color="primary" class="btn-primary" (click)="openBookingDialog()">
                   <i class="material-icons">book_online</i>
-                  Book Now
-                </button>
-                <button mat-raised-button class="btn-secondary" (click)="goToCamps()">
-                  <i class="material-icons">nature_people</i>
-                  Explore Places
+                  Create Booking
                 </button>
               </div>
             </div>
@@ -175,6 +191,10 @@ interface RecentActivity {
         </div>
       </div>
 
+      <div class="image-card-demo">
+        <app-image-card [data]="imageCardData"></app-image-card>
+      </div>
+
       <!-- Recent Activity Section (only show if user has bookings) -->
       <div *ngIf="hasBookings" class="recent-activity-section">
         <h3 class="section-title">Recent Activity</h3>
@@ -202,10 +222,32 @@ export class UserOverviewComponent implements OnInit {
   activeBookings = 0;
   completedBookings = 0;
   recentActivities: RecentActivity[] = [];
+  isBurgerMenuOpen = false;
+
+  // Sample image card data (should be replaced with real data from backend)
+  imageCardData: ImageCardData = {
+    id: '1',
+    title: 'Mountain Camp',
+    subtitle: 'Adventure & Nature',
+    description: 'A beautiful camp in the mountains with lots of activities.',
+    imageUrl: 'https://oromland.uz/images/sample-camp.jpg',
+    type: 'camps',
+    rating: 4.7,
+    price: 120,
+    location: 'Tashkent Region',
+    features: ['WiFi', 'Pool', 'Nature'],
+    status: 'active',
+    badge: { text: 'Popular', color: '#4CAF50' },
+    actions: {
+      primary: { label: 'Book Now', action: 'book' },
+      secondary: { label: 'View', action: 'view' }
+    }
+  };
 
   constructor(
     private router: Router,
     private authService: AuthService,
+    private bookingService: BookingService,
     private dialog: MatDialog
   ) {}
 
@@ -218,44 +260,167 @@ export class UserOverviewComponent implements OnInit {
     if (user) {
       this.userName = user.firstName;
       
-      // For demo purposes, simulate new user vs existing user
-      // In real app, this would come from API
-      this.hasBookings = Math.random() > 0.5; // 50% chance of having bookings
+      // Check if user is new (created within last 24 hours)
+      const isNewUser = this.isNewUser(user);
       
-      if (this.hasBookings) {
-        this.totalBookings = Math.floor(Math.random() * 5) + 1;
-        this.activeBookings = Math.floor(Math.random() * 3);
-        this.completedBookings = this.totalBookings - this.activeBookings;
-        this.loadRecentActivities();
+      if (isNewUser) {
+        // New user - show welcome message with zero stats
+        this.hasBookings = false;
+        this.totalBookings = 0;
+        this.activeBookings = 0;
+        this.completedBookings = 0;
+      } else {
+        // Existing user - fetch real data from backend
+        this.loadUserBookingsData(user.userId);
       }
     }
   }
 
-  private loadRecentActivities(): void {
-    // Mock recent activities for demo
-    this.recentActivities = [
-      {
-        type: 'booking',
-        icon: 'book_online',
-        title: 'Booking Confirmed',
-        description: 'Your booking for Summer Camp 2024 has been confirmed',
-        time: '2 hours ago'
+  private isNewUser(user: any): boolean {
+    // Check if user token indicates new user or if user has no previous bookings
+    const token = this.authService.getToken();
+    if (token && token.includes('new-user')) {
+      return true;
+    }
+    
+    // Check user creation time if available
+    const userCreationTime = user.createdAt || user.registrationDate;
+    if (userCreationTime) {
+      const creationDate = new Date(userCreationTime);
+      const now = new Date();
+      const hoursDiff = (now.getTime() - creationDate.getTime()) / (1000 * 60 * 60);
+      return hoursDiff < 24; // User is new if registered within last 24 hours
+    }
+    
+    return false;
+  }
+
+  private loadUserBookingsData(userId: number): void {
+    // Load both camp and sanatorium bookings
+    const campBookings$ = this.bookingService.getCampBookings({ userId });
+    const sanatoriumBookings$ = this.bookingService.getSanatoriumBookings({ userId });
+    
+    // Combine both requests
+    campBookings$.subscribe({
+      next: (campBookingsRes) => {
+        const campBookings = campBookingsRes?.content || campBookingsRes || [];
+        
+        sanatoriumBookings$.subscribe({
+          next: (sanatoriumBookingsRes) => {
+            const sanatoriumBookings = sanatoriumBookingsRes?.content || sanatoriumBookingsRes || [];
+            
+            // Combine all bookings
+            const allBookings = [...campBookings, ...sanatoriumBookings];
+            
+            this.hasBookings = allBookings.length > 0;
+            this.totalBookings = allBookings.length;
+            this.activeBookings = allBookings.filter((b: any) => 
+              b.status === 'PENDING' || b.status === 'APPROVED'
+            ).length;
+            this.completedBookings = allBookings.filter((b: any) => 
+              b.status === 'COMPLETED'
+            ).length;
+            
+            if (this.hasBookings) {
+              this.loadRecentActivities(allBookings);
+            }
+          },
+          error: () => {
+            // Handle sanatorium bookings error
+            this.handleBookingsError(campBookings);
+          }
+        });
       },
-      {
-        type: 'document',
-        icon: 'description',
-        title: 'Document Approved',
-        description: 'Medical certificate has been approved',
-        time: '1 day ago'
-      },
-      {
-        type: 'feedback',
-        icon: 'feedback',
-        title: 'Feedback Submitted',
-        description: 'Thank you for your feedback on Mountain Resort',
-        time: '3 days ago'
+      error: () => {
+        // Handle camp bookings error - try sanatorium only
+        sanatoriumBookings$.subscribe({
+          next: (sanatoriumBookingsRes) => {
+            const sanatoriumBookings = sanatoriumBookingsRes?.content || sanatoriumBookingsRes || [];
+            this.handleBookingsError(sanatoriumBookings);
+          },
+          error: () => {
+            // Both requests failed - set to no bookings
+            this.hasBookings = false;
+            this.totalBookings = 0;
+            this.activeBookings = 0;
+            this.completedBookings = 0;
+          }
+        });
       }
-    ];
+    });
+  }
+
+  private handleBookingsError(bookings: any[]): void {
+    this.hasBookings = bookings.length > 0;
+    this.totalBookings = bookings.length;
+    this.activeBookings = bookings.filter((b: any) => 
+      b.status === 'PENDING' || b.status === 'APPROVED'
+    ).length;
+    this.completedBookings = bookings.filter((b: any) => 
+      b.status === 'COMPLETED'
+    ).length;
+    
+    if (this.hasBookings) {
+      this.loadRecentActivities(bookings);
+    }
+  }
+
+  private loadRecentActivities(bookings?: any[]): void {
+    if (bookings && bookings.length > 0) {
+      // Generate recent activities based on actual bookings
+      this.recentActivities = bookings
+        .slice(0, 3) // Take only the 3 most recent
+        .map((booking, index) => ({
+          type: 'booking' as const,
+          icon: 'book_online',
+          title: `Booking ${booking.status?.toLowerCase() || 'created'}`,
+          description: `Your booking ${booking.firstName ? 'for ' + booking.firstName : ''} ${this.getBookingStatusMessage(booking.status)}`,
+          time: this.getTimeAgo(booking.createdAt || booking.startDate)
+        }));
+    } else {
+      // Default activities for demo
+      this.recentActivities = [
+        {
+          type: 'booking',
+          icon: 'book_online',
+          title: 'Welcome!',
+          description: 'Start your journey by creating your first booking',
+          time: 'Just now'
+        }
+      ];
+    }
+  }
+
+  private getBookingStatusMessage(status: string): string {
+    switch (status?.toUpperCase()) {
+      case 'PENDING': return 'is being reviewed';
+      case 'APPROVED': return 'has been approved';
+      case 'REJECTED': return 'needs attention';
+      case 'COMPLETED': return 'has been completed';
+      default: return 'has been created';
+    }
+  }
+
+  private getTimeAgo(dateString: string): string {
+    if (!dateString) return 'Recently';
+    
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMs = now.getTime() - date.getTime();
+    const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
+    const diffInDays = Math.floor(diffInHours / 24);
+    
+    if (diffInDays > 0) {
+      return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+    } else if (diffInHours > 0) {
+      return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+    } else {
+      return 'Recently';
+    }
+  }
+
+  toggleBurgerMenu(): void {
+    this.isBurgerMenuOpen = !this.isBurgerMenuOpen;
   }
 
   goToCamps(): void {

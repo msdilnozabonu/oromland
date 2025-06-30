@@ -29,6 +29,17 @@ body.dark-mode {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+// Main content styles
+.main-content {
+  min-height: 100vh;
+}
+
+.dashboard-main {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
 // Navigation Styles
 .navbar {
   background: var(--navbar-bg);

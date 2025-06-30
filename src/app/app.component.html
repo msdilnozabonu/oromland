@@ -1,14 +1,14 @@
-<!-- Navigation -->
-<nav class="navbar navbar-expand-lg navbar-light sticky-top navbar-blur" [class.dark-mode]="isDarkMode">
+<!-- Navigation - Hide in Dashboard -->
+<nav *ngIf="!isDashboardRoute" class="navbar navbar-expand-lg navbar-light sticky-top navbar-blur" [class.dark-mode]="isDarkMode">
   <div class="container">
     <img src="/favicon1.ico" alt="logo" style="width: 80px; height: 48px; margin-right: 12px; object-fit: contain;">
     <a class="navbar-brand" routerLink="/">
       <strong>Oromland</strong>
     </a>
 
-    <button 
-      class="navbar-toggler" 
-      type="button" 
+    <button
+      class="navbar-toggler"
+      type="button"
       (click)="toggleMenu()"
       [attr.aria-expanded]="isMenuOpen">
       <span class="navbar-toggler-icon"></span>
@@ -52,12 +52,12 @@
         <div class="auth">
           <a [routerLink]="['/login']">Login</a>
           <a (click)="goToAuth()" class="signup" style="cursor: pointer;">Sign up</a>
-          
+
           <!-- Dark Mode Toggle -->
           <button class="dark-mode-toggle" (click)="toggleDarkMode()" [title]="isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'">
             <i [class]="!isDarkMode ? 'fas fa-sun' : 'fas fa-moon'"></i>
           </button>
-          
+
           <button mat-icon-button [matMenuTriggerFor]="languageMenu" class="language-selector">
             <ng-container *ngTemplateOutlet="flagImage; context: {$implicit: activeLang}"></ng-container>
             <span class="language-text">{{getLanguageShortName(activeLang)}}</span>
@@ -66,7 +66,7 @@
 
         <!-- Language Menu -->
         <mat-menu #languageMenu="matMenu" class="language-menu-mat">
-          <button mat-menu-item *ngFor="let lang of languages" 
+          <button mat-menu-item *ngFor="let lang of languages"
                   (click)="selectLanguage(lang.code)"
                   [class.active]="activeLang === lang.code">
             <ng-container *ngTemplateOutlet="flagImage; context: {$implicit: lang.code}"></ng-container>
@@ -76,8 +76,8 @@
 
         <!-- Flag Image Template -->
         <ng-template #flagImage let-lang>
-          <img [src]="translationService.getFlagCode(lang)" 
-               [alt]="lang + ' flag'" 
+          <img [src]="translationService.getFlagCode(lang)"
+               [alt]="lang + ' flag'"
                class="flag-icon"
                onerror="this.style.display='none'">
         </ng-template>
@@ -87,12 +87,18 @@
 </nav>
 
 <!-- Main Content -->
-<main class="min-vh-100" [class.dark-mode]="isDarkMode">
+<main [class]="isDashboardRoute ? 'dashboard-main' : 'main-content'" [class.dark-mode]="isDarkMode">
   <router-outlet></router-outlet>
+  
+  <!-- Token Status Component (for development/testing) -->
+  <div class="container" *ngIf="!isDashboardRoute">
+    <app-token-status></app-token-status>
+    <app-role-debug></app-role-debug>
+  </div>
 </main>
 
-<!-- Footer -->
-<footer class="footer-section bg-dark text-white py-5 mt-5" [class.dark-mode]="isDarkMode">
+<!-- Footer - Hide in Dashboard -->
+<footer class="footer-section bg-dark text-white py-5 mt-5" [class.dark-mode]="isDarkMode" *ngIf="!isDashboardRoute">
   <div class="container">
     <div class="row g-4">
       <!-- Company Info -->
@@ -104,7 +110,7 @@
             {{ 'Discover the best camps and sanatoriums across Uzbekistan. Your perfect getaway awaits!' | translate }}
           </p>
         </div>
-        
+
         <!-- Contact Info -->
         <div class="footer-contact mb-4">
           <div class="contact-item mb-2">
@@ -128,7 +134,7 @@
             <a href="#" class="social-link social-link--facebook" title="Facebook">
               <i class="fab fa-facebook-f"></i>
             </a>
-            <a href="https://www.instagram.com/orom_land/?utm_source=ig_web_button_share_sheet" 
+            <a href="https://www.instagram.com/orom_land/?utm_source=ig_web_button_share_sheet"
                class="social-link social-link--instagram" title="Instagram">
               <i class="fab fa-instagram"></i>
             </a>
@@ -225,11 +231,11 @@
         <p class="text-light opacity-75 mb-3">
           {{ 'Subscribe to our newsletter for the latest updates and special offers.' | translate }}
         </p>
-        
+
         <div class="newsletter-form">
           <div class="input-group mb-3">
-            <input type="email" 
-                   class="form-control" 
+            <input type="email"
+                   class="form-control"
                    placeholder="{{ 'Enter your email' | translate }}"
                    aria-label="Email">
             <button class="btn btn-success" type="button">

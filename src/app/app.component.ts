@@ -1,17 +1,23 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
+import { RouterOutlet, RouterLink, RouterLinkActive, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { HttpClientModule } from '@angular/common/http';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
 import { AuthService } from './services/auth.service';
+import { TokenService } from './services/token.service';
+import { RoleService } from './services/role.service';
 import { TranslationService, Language, LanguageCode } from './services/translation.service';
 import { User } from './models/user.model';
+import { TokenStatusComponent } from './components/token-status/token-status.component';
+import { RoleDebugComponent } from './components/role-debug/role-debug.component';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, TranslateModule, MatIconModule, MatButtonModule, MatMenuModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, CommonModule, HttpClientModule, TranslateModule, MatIconModule, MatButtonModule, MatMenuModule, TokenStatusComponent, RoleDebugComponent],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
@@ -23,9 +29,12 @@ export class App implements OnInit {
   languages: Language[] = [];
   isMenuOpen = false;
   isDarkMode = false;
+  isDashboardRoute = false;
 
   constructor(
     private authService: AuthService,
+    private tokenService: TokenService,
+    private roleService: RoleService,
     public translationService: TranslationService,
     private router: Router
   ) {
@@ -41,12 +50,22 @@ export class App implements OnInit {
       this.currentLanguage = lang;
       this.activeLang = lang;
     });
-    
+
     // Initialize activeLang from service
     this.activeLang = this.translationService.activeLang;
-    
+
     // Load dark mode preference
     this.loadDarkModePreference();
+
+    // Track route changes to hide/show header and footer
+    this.router.events.pipe(
+      filter(event => event instanceof NavigationEnd)
+    ).subscribe((event: NavigationEnd) => {
+      this.isDashboardRoute = event.url.includes('/dashboard1');
+    });
+
+    // Initial check for current route
+    this.isDashboardRoute = this.router.url.includes('/dashboard1');
   }
 
   changeLanguage(language: LanguageCode) {

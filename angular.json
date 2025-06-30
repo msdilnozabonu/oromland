@@ -74,7 +74,8 @@
               "buildTarget": "oromland:build:production"
             },
             "development": {
-              "buildTarget": "oromland:build:development"
+              "buildTarget": "oromland:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"

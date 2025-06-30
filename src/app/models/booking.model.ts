@@ -59,6 +59,7 @@ export enum BookingStatus {
 
 export enum DocumentStatus {
   PENDING = 'PENDING',
+  APPROVED = 'APPROVED',
   ACCEPTED = 'ACCEPTED',
   REJECTED = 'REJECTED'
 }
@@ -94,4 +95,72 @@ export interface CreateBookingRequest {
     birthDate: string;
     relationship: string;
   }[];
+}
+
+// New models for Camp and Sanatorium bookings
+
+export interface BookingCampDTO {
+  id?: number;
+  // Child information
+  firstName: string;
+  lastName: string;
+  birthDate: string;
+  gender: string;
+  documentNumber: string;
+  address: string;
+  // Guardian information
+  guardianFirstName: string;
+  guardianLastName: string;
+  guardianPhone: string;
+  guardianDocument: string;
+  guardianJob: string;
+  // Health and files
+  healthNoteFilePath?: number;
+  birthCertificateFilePath?: number;
+  photoFilePath?: number;
+  parentPassportFile?: number;
+  guardianPermissionFilePath?: number;
+  privilegeDocumentPath?: number;
+  documentStatus?: DocumentStatus;
+}
+
+export interface BookingSanatorium {
+  id?: number;
+  user?: any;
+  sanatoriumId?: any;
+  startDate: string;
+  endDate: string;
+  durationDays: number;
+  totalPrice: number;
+  status: DocumentStatus;
+  // Documents
+  passportCopy?: Attachment;
+  medicalForm086?: Attachment;
+  vaccinationCard?: Attachment;
+  photo?: Attachment;
+  givenDocumentByWorkplace?: Attachment;
+}
+
+export interface Attachment {
+  id: number;
+  fileName: string;
+  filePath: string;
+  fileType: string;
+  uploadDate: string;
+}
+
+export interface BookingStats {
+  totalBookings: number;
+  pendingBookings: number;
+  confirmedBookings: number;
+  cancelledBookings: number;
+  totalRevenue: number;
+  newBookingsThisMonth: number;
+}
+
+export interface DashboardData {
+  user: any;
+  stats: BookingStats;
+  recentBookings: Booking[];
+  isNewUser: boolean;
 }

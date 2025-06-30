@@ -1,46 +1,166 @@
-// User Overview Component - Green/Yellow Minimalistic Theme
+// User Overview Component - Green/Yellow/Black/White Theme
 .user-overview-container {
-  padding: 2rem;
-  background: #f8fffe;
+  padding: 1rem;
+  background: #ffffff;
   min-height: 100vh;
+  position: relative;
+
+  @media (min-width: 768px) {
+    padding: 2rem;
+  }
+
+  // Burger Menu Button (Mobile)
+  .burger-menu-btn {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
+    z-index: 1001;
+    background: #ffffff;
+    border: 2px solid #4CAF50;
+    border-radius: 12px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+    transition: all 0.3s ease;
+
+    @media (min-width: 992px) {
+      display: none; // Hide on desktop since dashboard has its own navigation
+    }
+
+    &:hover {
+      box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .burger-line {
+      width: 24px;
+      height: 3px;
+      background: #4CAF50;
+      margin: 2px 0;
+      border-radius: 2px;
+      transition: all 0.3s;
+    }
+  }
+
+  // Mobile Sidebar
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: -280px;
+    width: 280px;
+    height: 100vh;
+    background: #ffffff;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+    z-index: 1200;
+    padding: 2rem 1rem 1rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    transition: left 0.3s cubic-bezier(0.4,0,0.2,1);
+    border-right: 3px solid #4CAF50;
+
+    &.open {
+      left: 0;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 2rem;
+      color: #4CAF50;
+      align-self: flex-end;
+      margin-bottom: 1.5rem;
+      cursor: pointer;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 1.2rem;
+
+      li a {
+        color: #222;
+        font-size: 1.1rem;
+        font-weight: 600;
+        text-decoration: none;
+        padding: 0.5rem 0.8rem;
+        border-radius: 8px;
+        transition: background 0.2s, color 0.2s;
+        display: block;
+
+        &:hover {
+          background: #4CAF50;
+          color: #fff;
+        }
+      }
+    }
+  }
 
   // Welcome Section
   .welcome-section {
     margin-bottom: 2rem;
+    margin-top: 2rem;
+
+    @media (max-width: 991px) {
+      margin-top: 5rem; // Account for burger menu
+    }
 
     .welcome-card {
-      background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
-      border-radius: 20px;
-      padding: 3rem 2rem;
+      background: #4CAF50;
+      border-radius: 16px;
+      padding: 2rem 1.5rem;
       color: white;
       text-align: center;
-      box-shadow: 0 8px 32px rgba(76, 175, 80, 0.2);
+      box-shadow: 0 8px 32px rgba(76, 175, 80, 0.3);
+
+      @media (min-width: 768px) {
+        padding: 3rem 2rem;
+        border-radius: 20px;
+      }
 
       .welcome-content {
         max-width: 800px;
         margin: 0 auto;
 
         .welcome-icon {
-          font-size: 4rem;
+          font-size: 3rem;
           margin-bottom: 1rem;
-          opacity: 0.9;
+
+          @media (min-width: 768px) {
+            font-size: 4rem;
+          }
 
           i {
-            font-size: 4rem;
+            font-size: inherit;
           }
         }
 
         .welcome-title {
-          font-size: 2.5rem;
+          font-size: 1.8rem;
           font-weight: 700;
           margin-bottom: 0.5rem;
           text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+          @media (min-width: 768px) {
+            font-size: 2.5rem;
+          }
         }
 
         .welcome-subtitle {
-          font-size: 1.2rem;
-          opacity: 0.9;
+          font-size: 1rem;
           margin-bottom: 2rem;
+          color: rgba(255, 255, 255, 0.95);
+
+          @media (min-width: 768px) {
+            font-size: 1.2rem;
+          }
         }
 
         // Stats Row for existing users
@@ -51,7 +171,7 @@
           margin-top: 2rem;
 
           .stat-card {
-            background: rgba(255, 255, 255, 0.2);
+            background: #fff;
             border-radius: 15px;
             padding: 1.5rem;
             text-align: center;
@@ -136,12 +256,13 @@
             }
 
             .btn-secondary {
-              background: rgba(255, 255, 255, 0.2);
-              color: white;
-              border: 2px solid rgba(255, 255, 255, 0.3);
+              background: #fff;
+              color: #4CAF50;
+              border: 2px solid #4CAF50;
 
               &:hover {
-                background: rgba(255, 255, 255, 0.3);
+                background: #e8f5e8;
+                color: #388e3c;
                 transform: translateY(-2px);
               }
             }

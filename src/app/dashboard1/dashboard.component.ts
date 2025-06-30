@@ -29,116 +29,184 @@ import { User } from '../models/user.model';
   ],
   template: `
     <div class="dashboard-container">
-      <mat-toolbar class="dashboard-toolbar">
-        <button mat-icon-button (click)="toggleSidenav()" class="menu-button">
-          <mat-icon>menu</mat-icon>
+      <!-- Mobile Header -->
+      <div class="mobile-header d-lg-none">
+        <button class="burger-menu" (click)="toggleMobileMenu()" [class.active]="isMobileMenuOpen">
+          <span></span>
+          <span></span>
+          <span></span>
         </button>
-        
-        <span class="toolbar-title">{{dashboardConfig?.displayName || 'Dashboard'}}</span>
-        
-        <div class="toolbar-spacer"></div>
-        
-        <button mat-button [matMenuTriggerFor]="langMenu" class="lang-button">
-          <mat-icon>language</mat-icon>
-          {{currentLang}}
+        <span class="mobile-title">{{dashboardConfig?.displayName || 'Dashboard'}}</span>
+        <button class="mobile-user-btn" (click)="showUserMenu = !showUserMenu">
+          <i class="fas fa-user-circle"></i>
         </button>
-        <mat-menu #langMenu="matMenu">
-          <button mat-menu-item *ngFor="let lang of languages" (click)="changeLang(lang.code)">
-            {{lang.label}}
-          </button>
-        </mat-menu>
-        
-        <button mat-button [matMenuTriggerFor]="userMenu" class="user-button">
-          <mat-icon>account_circle</mat-icon>
-          {{userName}}
-        </button>
-        <mat-menu #userMenu="matMenu">
-          <button mat-menu-item (click)="logout()">
-            <mat-icon>logout</mat-icon>
-            Logout
-          </button>
-        </mat-menu>
-      </mat-toolbar>
+      </div>
 
-      <mat-sidenav-container class="sidenav-container">
-        <mat-sidenav #sidenav mode="side" opened class="sidenav">
-          <div class="sidenav-header">
-            <div class="user-info">
-              <div class="user-avatar">
-                <mat-icon>account_circle</mat-icon>
-              </div>
-              <div class="user-details">
-                <div class="user-name">{{userName}}</div>
-                <div class="user-role">{{userRole}}</div>
-              </div>
+      <!-- Mobile Menu Overlay -->
+      <div class="mobile-menu-overlay" [class.active]="isMobileMenuOpen" (click)="closeMobileMenu()"></div>
+
+      <!-- Sidebar -->
+      <div class="sidebar" [class.mobile-open]="isMobileMenuOpen">
+        <div class="sidebar-header">
+          <div class="user-info">
+            <div class="user-avatar">
+              <i class="fas fa-user-circle"></i>
+            </div>
+            <div class="user-details">
+              <div class="user-name">{{userName}}</div>
+              <div class="user-role">{{userRole}}</div>
             </div>
           </div>
-          
-          <mat-nav-list class="nav-list">
-            <a mat-list-item 
-               *ngFor="let item of navigationItems" 
-               [routerLink]="item.route"
-               routerLinkActive="active"
-               [routerLinkActiveOptions]="{ exact: item.exact || false }"
-               class="nav-item">
-              <mat-icon matListItemIcon>{{item.icon}}</mat-icon>
-              <span matListItemTitle>{{item.label}}</span>
-              <span matListItemMeta *ngIf="item.badge" class="badge">{{item.badge}}</span>
-            </a>
-          </mat-nav-list>
-        </mat-sidenav>
+        </div>
+        
+        <nav class="sidebar-nav">
+          <a *ngFor="let item of navigationItems" 
+             [routerLink]="item.route"
+             routerLinkActive="active"
+             [routerLinkActiveOptions]="{ exact: item.exact || false }"
+             class="nav-item"
+             (click)="closeMobileMenu()">
+            <i class="{{item.icon}}"></i>
+            <span>{{item.label}}</span>
+            <span *ngIf="item.badge" class="badge">{{item.badge}}</span>
+          </a>
+        </nav>
 
-        <mat-sidenav-content class="main-content">
-          <router-outlet></router-outlet>
-        </mat-sidenav-content>
-      </mat-sidenav-container>
+        <div class="sidebar-footer">
+          <button class="logout-btn" (click)="logout()">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>Logout</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content" [class.shifted]="!isMobileMenuOpen">
+        <router-outlet></router-outlet>
+      </div>
+
+      <!-- Mobile User Menu -->
+      <div class="mobile-user-menu" [class.show]="showUserMenu" *ngIf="showUserMenu">
+        <div class="user-menu-item" (click)="logout()">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>Logout</span>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
     .dashboard-container {
       height: 100vh;
       display: flex;
-      flex-direction: column;
+      background-color: #ffffff;
     }
 
-    .dashboard-toolbar {
+    /* Mobile Header */
+    .mobile-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 60px;
       background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
-      color: white;
-      box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1rem;
       z-index: 1000;
+      box-shadow: 0 2px 8px rgba(76, 175, 80, 0.2);
     }
 
-    .menu-button {
-      margin-right: 1rem;
+    .burger-menu {
+      background: none;
+      border: none;
+      width: 30px;
+      height: 24px;
+      position: relative;
+      cursor: pointer;
     }
 
-    .toolbar-title {
-      font-size: 1.2rem;
-      font-weight: 600;
+    .burger-menu span {
+      display: block;
+      width: 100%;
+      height: 3px;
+      background: white;
+      margin: 3px 0;
+      transition: 0.3s;
     }
 
-    .toolbar-spacer {
-      flex: 1;
+    .burger-menu.active span:nth-child(1) {
+      transform: rotate(-45deg) translate(-5px, 6px);
     }
 
-    .lang-button, .user-button {
-      margin-left: 0.5rem;
+    .burger-menu.active span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .burger-menu.active span:nth-child(3) {
+      transform: rotate(45deg) translate(-5px, -6px);
+    }
+
+    .mobile-title {
       color: white;
+      font-weight: 600;
+      font-size: 1.1rem;
     }
 
-    .sidenav-container {
-      flex: 1;
-      background: #f8fffe;
+    .mobile-user-btn {
+      background: none;
+      border: none;
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
     }
 
-    .sidenav {
+    /* Mobile Menu Overlay */
+    .mobile-menu-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 998;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .mobile-menu-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    /* Sidebar */
+    .sidebar {
       width: 280px;
+      height: 100vh;
       background: white;
       border-right: 1px solid #e8f5e8;
       box-shadow: 2px 0 8px rgba(76, 175, 80, 0.1);
+      position: fixed;
+      left: 0;
+      top: 0;
+      z-index: 999;
+      transform: translateX(0);
+      transition: transform 0.3s ease;
+      overflow-y: auto;
     }
 
-    .sidenav-header {
+    @media (max-width: 991px) {
+      .sidebar {
+        transform: translateX(-100%);
+      }
+
+      .sidebar.mobile-open {
+        transform: translateX(0);
+      }
+    }
+
+    .sidebar-header {
       padding: 2rem 1rem;
       background: linear-gradient(135deg, #f0fdf4 0%, #e8f5e8 100%);
       border-bottom: 1px solid #e8f5e8;
@@ -161,10 +229,8 @@ import { User } from '../models/user.model';
       color: white;
     }
 
-    .user-avatar mat-icon {
+    .user-avatar i {
       font-size: 2rem;
-      width: 2rem;
-      height: 2rem;
     }
 
     .user-details {
@@ -182,30 +248,40 @@ import { User } from '../models/user.model';
       color: #6b7280;
     }
 
-    .nav-list {
+    /* Navigation */
+    .sidebar-nav {
       padding: 1rem 0;
+      flex: 1;
     }
 
     .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 0.75rem 1.5rem;
+      color: #6b7280;
+      text-decoration: none;
+      transition: all 0.3s ease;
       margin: 0.25rem 1rem;
       border-radius: 12px;
-      transition: all 0.3s ease;
-      color: #6b7280;
-
-      &:hover {
-        background: #f0fdf4;
-        color: #4CAF50;
-      }
-
-      &.active {
-        background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
-        color: white;
-        box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-      }
+      position: relative;
     }
 
-    .nav-item mat-icon {
-      color: inherit;
+    .nav-item:hover {
+      background: #f0fdf4;
+      color: #4CAF50;
+      text-decoration: none;
+    }
+
+    .nav-item.active {
+      background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+      color: white;
+      box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+    }
+
+    .nav-item i {
+      width: 20px;
+      text-align: center;
     }
 
     .badge {
@@ -217,20 +293,88 @@ import { User } from '../models/user.model';
       font-weight: 600;
       min-width: 20px;
       text-align: center;
+      margin-left: auto;
     }
 
+    /* Sidebar Footer */
+    .sidebar-footer {
+      padding: 1rem;
+      border-top: 1px solid #e8f5e8;
+    }
+
+    .logout-btn {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      width: 100%;
+      padding: 0.75rem 1rem;
+      background: none;
+      border: none;
+      color: #dc3545;
+      text-align: left;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    .logout-btn:hover {
+      background: #f8d7da;
+    }
+
+    /* Main Content */
     .main-content {
-      background: #f8fffe;
-      min-height: 100%;
+      flex: 1;
+      background: #ffffff;
+      min-height: 100vh;
+      margin-left: 280px;
+      transition: margin-left 0.3s ease;
     }
 
-    @media (max-width: 768px) {
-      .sidenav {
-        width: 100%;
+    @media (max-width: 991px) {
+      .main-content {
+        margin-left: 0;
+        padding-top: 60px;
       }
-      
-      .toolbar-title {
-        font-size: 1rem;
+    }
+
+    /* Mobile User Menu */
+    .mobile-user-menu {
+      position: fixed;
+      top: 60px;
+      right: 1rem;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-10px);
+      transition: all 0.3s ease;
+    }
+
+    .mobile-user-menu.show {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .user-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      color: #dc3545;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .user-menu-item:hover {
+      background: #f8d7da;
+    }
+
+    @media (min-width: 992px) {
+      .mobile-header {
+        display: none;
       }
     }
   `]
@@ -241,6 +385,7 @@ export class DashboardComponent implements OnInit {
   userRole = '';
   currentLang = 'EN';
   isMobileMenuOpen = false;
+  showUserMenu = false;
   dashboardConfig: DashboardConfig | null = null;
   navigationItems: NavigationItem[] = [];
 
@@ -258,6 +403,7 @@ export class DashboardComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadUserData();
+    this.loadNavigationItems();
   }
 
   private loadUserData(): void {
@@ -268,12 +414,62 @@ export class DashboardComponent implements OnInit {
       
       // Load dashboard configuration
       this.dashboardConfig = this.dashboardService.getDashboardConfig(this.currentUser.roleId);
-      this.navigationItems = this.dashboardService.getNavigationItems(this.currentUser.roleId);
     }
   }
 
-  toggleSidenav(): void {
+  private loadNavigationItems(): void {
+    if (this.currentUser) {
+      this.navigationItems = this.getNavigationItemsForRole(this.currentUser.role?.name as any);
+    }
+  }
+
+  private getNavigationItemsForRole(role: string): NavigationItem[] {
+    const baseItems: NavigationItem[] = [
+      { 
+        label: 'Overview', 
+        icon: 'fas fa-tachometer-alt', 
+        route: `/dashboard1/${role.toLowerCase()}/overview`,
+        exact: true
+      }
+    ];
+
+    switch (role) {
+      case 'USER':
+        return [
+          ...baseItems,
+          { label: 'My Bookings', icon: 'fas fa-calendar-check', route: '/dashboard1/user/bookings' },
+          { label: 'Book Camp', icon: 'fas fa-campground', route: '/dashboard1/user/book-camp' },
+          { label: 'Book Sanatorium', icon: 'fas fa-hospital', route: '/dashboard1/user/book-sanatorium' },
+          { label: 'Profile', icon: 'fas fa-user-edit', route: '/dashboard1/user/profile' },
+          { label: 'Reviews', icon: 'fas fa-star', route: '/dashboard1/user/reviews' }
+        ];
+      case 'ADMIN':
+        return [
+          ...baseItems,
+          { label: 'Manage Bookings', icon: 'fas fa-list-alt', route: '/dashboard1/admin/bookings' },
+          { label: 'Users', icon: 'fas fa-users', route: '/dashboard1/admin/users' },
+          { label: 'Reports', icon: 'fas fa-chart-bar', route: '/dashboard1/admin/reports' }
+        ];
+      case 'SUPER_ADMIN':
+        return [
+          ...baseItems,
+          { label: 'Role Management', icon: 'fas fa-user-shield', route: '/dashboard1/super-admin/roles' },
+          { label: 'System Settings', icon: 'fas fa-cogs', route: '/dashboard1/super-admin/settings' },
+          { label: 'All Bookings', icon: 'fas fa-list', route: '/dashboard1/super-admin/bookings' },
+          { label: 'Analytics', icon: 'fas fa-analytics', route: '/dashboard1/super-admin/analytics' }
+        ];
+      default:
+        return baseItems;
+    }
+  }
+
+  toggleMobileMenu(): void {
     this.isMobileMenuOpen = !this.isMobileMenuOpen;
+  }
+
+  closeMobileMenu(): void {
+    this.isMobileMenuOpen = false;
+    this.showUserMenu = false;
   }
 
   changeLang(langCode: string): void {

@@ -9,5 +9,6 @@ export const environment = {
   mapConfig: {
     defaultCenter: [41.2995, 69.2401],
     defaultZoom: 10
-  }
+  },
+  apiBaseUrl: '/api'
 };
