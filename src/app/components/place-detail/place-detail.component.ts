@@ -89,7 +89,7 @@ export class PlaceDetailComponent implements OnInit {
     }
 
     // Navigate to booking page
-    this.router.navigate(['/dashboard1/user/overview'], {
+    this.router.navigate(['/dashboard/user/overview'], {
       queryParams: { placeId: this.placeId }
     });
   }

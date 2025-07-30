@@ -1,26 +1,20 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, of } from 'rxjs';
-import { CookieService } from 'ngx-cookie-service';
-import { User, UserRole, Gender, Permission } from '../models/user.model';
+import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, BehaviorSubject, throwError, timer } from 'rxjs';
+import { isPlatformBrowser } from '@angular/common';
+import { catchError, tap, switchMap } from 'rxjs/operators';
+import { User, UserRole } from '../models/user.model';
+import { Router } from '@angular/router';
 
-export interface LoginRequest {
-  username: string;
-  password: string;
-}
-
-export interface RegisterRequest {
-  username: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  gender: string;
-  birthDate: string;
-  phoneNumber: string;
-}
-
-export interface AuthResponse {
+interface LoginResponse {
   token: string;
+  refreshToken?: string;
+  user: User;
+  expiresIn?: number;
+}
+
+interface RegisterResponse {
+  message: string;
   user: User;
 }
 
@@ -28,222 +22,420 @@ export interface AuthResponse {
   providedIn: 'root'
 })
 export class AuthService {
+  private baseUrl = 'https://oromland.uz/api';
   private currentUserSubject = new BehaviorSubject<User | null>(null);
   public currentUser$ = this.currentUserSubject.asObservable();
-
-  private mockUsers: User[] = [
-    {
-      userId: 1,
-      username: 'admin',
-      firstName: 'Kamronbek',
-      lastName: 'Jumanov',
-      email: 'asdfg@gmail.com',
-      roleId: 2,
-      role: { id: 2, name: UserRole.ADMIN, permissions: [Permission.READ_USER, Permission.CREATE_USER, Permission.UPDATE_USER, Permission.DELETE_USER] },
-      gender: Gender.MALE,
-      birthDate: '2005-10-10',
-      phoneNumber: '+998901234567',
-      isActive: true
-    },
-    {
-      userId: 2,
-      username: 'super_admin',
-      firstName: 'Super',
-      lastName: 'Admin',
-      email: 'super_admin@gmail.com',
-      roleId: 1,
-      role: { id: 1, name: UserRole.SUPER_ADMIN, permissions: [Permission.READ_USER, Permission.CREATE_USER, Permission.UPDATE_USER, Permission.DELETE_USER] },
-      gender: Gender.MALE,
-      birthDate: '2005-10-12',
-      phoneNumber: '+9989098765432',
-      isActive: true
-    },
-    {
-      userId: 3,
-      username: 'manager',
-      firstName: 'Super',
-      lastName: 'Admin',
-      email: 'super@gmail.com',
-      roleId: 3,
-      role: { id: 3, name: UserRole.MANAGER, permissions: [Permission.READ_USER, Permission.CREATE_USER] },
-      gender: Gender.MALE,
-      birthDate: '2005-10-12',
-      phoneNumber: '+99890987654',
-      isActive: true
-    },
-    {
-      userId: 4,
-      username: 'operator',
-      firstName: 'Super',
-      lastName: 'Admin',
-      email: 'operator@gmail.com',
-      roleId: 4,
-      role: { id: 4, name: UserRole.OPERATOR, permissions: [Permission.READ_USER] },
-      gender: Gender.MALE,
-      birthDate: '2005-10-12',
-      phoneNumber: '+99890987654',
-      isActive: true
-    }
-  ];
+  
+  private tokenRefreshTimer?: any;
+  private maxLoginAttempts = 5;
+  private loginAttemptWindow = 15 * 60 * 1000; // 15 minutes
+  private readonly TOKEN_KEY = 'access_token';
+  private readonly REFRESH_TOKEN_KEY = 'refresh_token';
+  private readonly USER_KEY = 'current_user';
+  private readonly LOGIN_ATTEMPTS_KEY = 'login_attempts';
 
   constructor(
-    private cookieService: CookieService
+    private http: HttpClient,
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private router: Router
   ) {
-    this.loadUserFromStorage();
+    this.loadCurrentUser();
+    this.setupTokenRefresh();
   }
 
-  login(credentials: LoginRequest): Observable<AuthResponse> {
-    const user = this.mockUsers.find(u => 
-      u.username === credentials.username && 
-      credentials.password === 'Qwerty123@'
-    );
-
-    if (user) {
-      const response: AuthResponse = {
-        token: 'mock-jwt-token-' + Date.now(),
-        user: user
-      };
-      this.setSession(response);
-      return of(response);
-    } else {
-      throw new Error('Invalid credentials');
+  private loadCurrentUser(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      const token = this.getToken();
+      const userData = localStorage.getItem(this.USER_KEY);
+      
+      if (token && userData && this.isTokenValid(token)) {
+        try {
+          const user: User = JSON.parse(userData);
+          this.currentUserSubject.next(user);
+        } catch (error) {
+          console.error('Error parsing stored user data:', error);
+          this.logout();
+        }
+      } else {
+        this.logout();
+      }
     }
   }
 
-  register(userData: RegisterRequest): Observable<AuthResponse> {
-    // Mock registration - create new user
-    const newUser: User = {
-      userId: this.mockUsers.length + 1,
-      username: userData.username,
-      firstName: userData.firstName,
-      lastName: userData.lastName,
-      email: userData.email,
-      roleId: 5,
-      role: { id: 5, name: UserRole.USER, permissions: [Permission.READ_USER, Permission.CREATE_BOOKING] },
-      gender: userData.gender as Gender,
-      birthDate: userData.birthDate,
-      phoneNumber: userData.phoneNumber,
-      isActive: true
+  private isTokenValid(token: string): boolean {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const currentTime = Math.floor(Date.now() / 1000);
+      return payload.exp > currentTime;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  private setupTokenRefresh(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      const token = this.getToken();
+      if (token && this.isTokenValid(token)) {
+        this.scheduleTokenRefresh(token);
+      }
+    }
+  }
+
+  private scheduleTokenRefresh(token: string): void {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const expirationTime = payload.exp * 1000;
+      const now = Date.now();
+      const refreshTime = expirationTime - now - (5 * 60 * 1000); // Refresh 5 minutes before expiration
+
+      if (refreshTime > 0) {
+        this.tokenRefreshTimer = timer(refreshTime).subscribe(() => {
+          this.refreshToken().subscribe({
+            error: () => this.logout()
+          });
+        });
+      }
+    } catch (error) {
+      console.error('Error scheduling token refresh:', error);
+    }
+  }
+
+  private refreshToken(): Observable<any> {
+    const refreshToken = this.getRefreshToken();
+    if (!refreshToken) {
+      return throwError(() => new Error('No refresh token available'));
+    }
+
+    return this.http.post<LoginResponse>(`${this.baseUrl}/auth/refresh`, { 
+      refreshToken 
+    }).pipe(
+      tap(response => {
+        this.saveToken(response.token);
+        if (response.refreshToken) {
+          this.saveRefreshToken(response.refreshToken);
+        }
+        this.scheduleTokenRefresh(response.token);
+      }),
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  private canAttemptLogin(): boolean {
+    if (!isPlatformBrowser(this.platformId)) return true;
+    
+    const attemptsData = localStorage.getItem(this.LOGIN_ATTEMPTS_KEY);
+    if (!attemptsData) return true;
+
+    try {
+      const { count, timestamp } = JSON.parse(attemptsData);
+      const now = Date.now();
+      
+      // Reset attempts if window has expired
+      if (now - timestamp > this.loginAttemptWindow) {
+        localStorage.removeItem(this.LOGIN_ATTEMPTS_KEY);
+        return true;
+      }
+      
+      return count < this.maxLoginAttempts;
+    } catch {
+      localStorage.removeItem(this.LOGIN_ATTEMPTS_KEY);
+      return true;
+    }
+  }
+
+  private recordLoginAttempt(): void {
+    if (!isPlatformBrowser(this.platformId)) return;
+    
+    const attemptsData = localStorage.getItem(this.LOGIN_ATTEMPTS_KEY);
+    let count = 1;
+    
+    if (attemptsData) {
+      try {
+        const data = JSON.parse(attemptsData);
+        count = data.count + 1;
+      } catch {
+        count = 1;
+      }
+    }
+    
+    localStorage.setItem(this.LOGIN_ATTEMPTS_KEY, JSON.stringify({
+      count,
+      timestamp: Date.now()
+    }));
+  }
+
+  private clearLoginAttempts(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem(this.LOGIN_ATTEMPTS_KEY);
+    }
+  }
+
+  login(username: string, password: string): Observable<LoginResponse> {
+    // Check if login attempts exceeded
+    if (!this.canAttemptLogin()) {
+      return throwError(() => ({
+        error: { 
+          message: `Too many failed login attempts. Please try again later.`,
+          code: 'TOO_MANY_ATTEMPTS'
+        }
+      }));
+    }
+
+    // Sanitize inputs
+    const sanitizedUsername = this.sanitizeInput(username);
+    const loginData = {
+      username: sanitizedUsername,
+      password: password
     };
 
-    this.mockUsers.push(newUser);
-    
-    const response: AuthResponse = {
-      token: 'mock-jwt-token-' + Date.now(),
-      user: newUser
+    return this.http.post<LoginResponse>(`${this.baseUrl}/auth/login`, loginData).pipe(
+      tap(response => {
+        // Clear login attempts on successful login
+        this.clearLoginAttempts();
+        
+        // Store tokens and user data
+        this.saveToken(response.token);
+        if (response.refreshToken) {
+          this.saveRefreshToken(response.refreshToken);
+        }
+        this.saveUserData(response.user);
+        
+        // Update current user subject
+        this.currentUserSubject.next(response.user);
+        
+        // Schedule token refresh
+        this.scheduleTokenRefresh(response.token);
+      }),
+      catchError((error: HttpErrorResponse) => {
+        // Record failed attempt
+        this.recordLoginAttempt();
+        return this.handleError(error);
+      })
+    );
+  }
+
+  register(userData: any): Observable<RegisterResponse> {
+    // Sanitize user input
+    const sanitizedData = {
+      firstName: this.sanitizeInput(userData.firstName),
+      lastName: this.sanitizeInput(userData.lastName),
+      username: this.sanitizeInput(userData.username),
+      email: this.sanitizeInput(userData.email),
+      phoneNumber: this.sanitizeInput(userData.phoneNumber),
+      birthDate: userData.birthDate,
+      gender: userData.gender,
+      password: userData.password // Don't sanitize password as it may contain special chars
     };
-    
-    this.setSession(response);
-    return of(response);
+
+    return this.http.post<RegisterResponse>(`${this.baseUrl}/auth/register`, sanitizedData).pipe(
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  saveToken(token: string): void {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(this.TOKEN_KEY, token);
+    }
+  }
+
+  private saveRefreshToken(refreshToken: string): void {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
+    }
+  }
+
+  private saveUserData(user: User): void {
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.setItem(this.USER_KEY, JSON.stringify(user));
+    }
+  }
+
+  getToken(): string | null {
+    if (isPlatformBrowser(this.platformId)) {
+      return localStorage.getItem(this.TOKEN_KEY);
+    }
+    return null;
+  }
+
+  private getRefreshToken(): string | null {
+    if (isPlatformBrowser(this.platformId)) {
+      return localStorage.getItem(this.REFRESH_TOKEN_KEY);
+    }
+    return null;
   }
 
   logout(): void {
-    this.cookieService.delete('token');
-    this.cookieService.delete('user');
+    // Clear timer
+    if (this.tokenRefreshTimer) {
+      this.tokenRefreshTimer.unsubscribe();
+    }
+
+    // Make logout API call (optional)
+    this.http.post(`${this.baseUrl}/auth/logout`, {}).subscribe({
+      error: () => {} // Ignore logout API errors
+    });
+
+    // Clear all stored data
+    if (isPlatformBrowser(this.platformId)) {
+      localStorage.removeItem(this.TOKEN_KEY);
+      localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+      localStorage.removeItem(this.USER_KEY);
+      localStorage.removeItem(this.LOGIN_ATTEMPTS_KEY);
+    }
+    
     this.currentUserSubject.next(null);
   }
 
   isAuthenticated(): boolean {
-    return !!this.getToken();
-  }
-
-  getToken(): string | null {
-    return this.cookieService.get('token') || null;
+    const token = this.getToken();
+    return token !== null && this.isTokenValid(token);
   }
 
   getCurrentUser(): User | null {
     return this.currentUserSubject.value;
   }
 
-  hasRole(role: UserRole): boolean {
-    const user = this.getCurrentUser();
-    return user?.role?.name === role;
-  }
-
-  hasPermission(permission: string): boolean {
-    const user = this.getCurrentUser();
-    return user?.role?.permissions?.some(p => p === permission) || false;
-  }
-
   getDashboardRoute(): string {
     const user = this.getCurrentUser();
-    if (!user?.role) return '/';
-
-    // Check for last used page for returning users
-    const lastUsedPage = this.getLastUsedPage(user.userId);
-    if (lastUsedPage && this.isValidDashboardRoute(lastUsedPage, user.role.name as UserRole)) {
-      return lastUsedPage;
-    }
-
-    // Default routes for each role
-    switch (user.role.name) {
+    if (!user) return '/login';
+    
+    // Convert role to string for comparison
+    const userRole = String(user.role);
+    
+    switch (userRole) {
       case UserRole.SUPER_ADMIN:
-        return '/dashboard1/super-admin/overview';
+        return '/dashboard/super-admin';
       case UserRole.ADMIN:
-        return '/dashboard1/admin/overview';
+        return '/dashboard/admin';
       case UserRole.MANAGER:
-        return '/dashboard1/manager/overview';
+        return '/dashboard/manager';
       case UserRole.OPERATOR:
-        return '/dashboard1/operator/overview';
+        return '/dashboard/operator';
       case UserRole.USER:
-        return '/dashboard1/user/overview';
       default:
-        return '/';
+        return '/dashboard/user';
     }
   }
 
-  getLastUsedPage(userId: number): string | null {
-    if (typeof window !== 'undefined' && localStorage) {
-      return localStorage.getItem(`lastUsedPage_${userId}`);
-    }
-    return null;
+  private sanitizeInput(input: string): string {
+    return input.trim().replace(/[<>\"']/g, '');
   }
 
-  setLastUsedPage(userId: number, route: string): void {
-    if (typeof window !== 'undefined' && localStorage) {
-      localStorage.setItem(`lastUsedPage_${userId}`, route);
-    }
-  }
-
-  private isValidDashboardRoute(route: string, userRole: UserRole): boolean {
-    const roleRoutes = {
-      [UserRole.SUPER_ADMIN]: '/dashboard1/super-admin',
-      [UserRole.ADMIN]: '/dashboard1/admin',
-      [UserRole.MANAGER]: '/dashboard1/manager',
-      [UserRole.OPERATOR]: '/dashboard1/operator',
-      [UserRole.USER]: '/dashboard1/user'
-    };
-
-    return route.startsWith(roleRoutes[userRole] || '');
-  }
-
-  private setSession(authResult: AuthResponse): void {
-    this.cookieService.set('token', authResult.token, { expires: 7 });
-    this.cookieService.set('user', JSON.stringify(authResult.user), { expires: 7 });
-    this.currentUserSubject.next(authResult.user);
-  }
-
-  private loadUserFromStorage(): void {
-    const userStr = this.cookieService.get('user');
-    if (userStr) {
-      try {
-        const user = JSON.parse(userStr);
-        this.currentUserSubject.next(user);
-      } catch (error) {
-        console.error('Error parsing user from storage:', error);
-        this.logout();
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    let errorMessage = 'An unexpected error occurred';
+    
+    if (error.error instanceof ErrorEvent) {
+      // Client-side error
+      errorMessage = `Error: ${error.error.message}`;
+    } else {
+      // Server-side error
+      switch (error.status) {
+        case 400:
+          errorMessage = error.error?.message || 'Invalid request';
+          break;
+        case 401:
+          errorMessage = 'Invalid credentials';
+          break;
+        case 403:
+          errorMessage = 'Access denied';
+          break;
+        case 404:
+          errorMessage = 'Service not found';
+          break;
+        case 409:
+          errorMessage = error.error?.message || 'Conflict - resource already exists';
+          break;
+        case 422:
+          errorMessage = error.error?.message || 'Validation failed';
+          break;
+        case 429:
+          errorMessage = 'Too many requests. Please try again later';
+          break;
+        case 500:
+          errorMessage = 'Server error. Please try again later';
+          break;
+        default:
+          errorMessage = error.error?.message || `Error Code: ${error.status}`;
       }
     }
+    
+    return throwError(() => ({
+      error: { message: errorMessage, status: error.status }
+    }));
   }
 
-  updateProfile(profile: Partial<User>): Observable<User> {
+  // Method to check if user has specific role
+  hasRole(role: UserRole): boolean {
     const user = this.getCurrentUser();
-    if (user) {
-      const updatedUser = { ...user, ...profile };
-      this.currentUserSubject.next(updatedUser);
-      this.cookieService.set('user', JSON.stringify(updatedUser));
-      return of(updatedUser);
-    }
-    throw new Error('No user logged in');
+    return user?.role === (role as any);
+  }
+
+  // Method to check if user has minimum role level
+  hasMinimumRole(minimumRole: UserRole): boolean {
+    const user = this.getCurrentUser();
+    if (!user || !user.role) return false;
+
+    const roleHierarchy: { [key: string]: number } = {
+      [UserRole.USER]: 1,
+      [UserRole.OPERATOR]: 2,
+      [UserRole.MANAGER]: 3,
+      [UserRole.ADMIN]: 4,
+      [UserRole.SUPER_ADMIN]: 5
+    };
+
+    const userRoleLevel = roleHierarchy[String(user.role)];
+    const minimumRoleLevel = roleHierarchy[minimumRole];
+
+    return userRoleLevel >= minimumRoleLevel;
+  }
+
+  // Method to change password
+  changePassword(currentPassword: string, newPassword: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/auth/change-password`, {
+      currentPassword,
+      newPassword
+    }).pipe(
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  // Method to request password reset
+  requestPasswordReset(email: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/auth/forgot-password`, {
+      email: this.sanitizeInput(email)
+    }).pipe(
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  // Method to verify account
+  verifyAccount(token: string): Observable<any> {
+    return this.http.post(`${this.baseUrl}/auth/verify`, {
+      token
+    }).pipe(
+      catchError(this.handleError.bind(this))
+    );
+  }
+
+  // Method to update user profile
+  updateProfile(profileData: any): Observable<any> {
+    const sanitizedData = {
+      firstName: this.sanitizeInput(profileData.firstName),
+      lastName: this.sanitizeInput(profileData.lastName),
+      email: this.sanitizeInput(profileData.email),
+      phoneNumber: this.sanitizeInput(profileData.phoneNumber),
+      birthDate: profileData.birthDate
+    };
+
+    return this.http.put(`${this.baseUrl}/auth/profile`, sanitizedData).pipe(
+      tap((response: any) => {
+        // Update the stored user data if the response includes updated user info
+        if (response.user) {
+          this.saveUserData(response.user);
+          this.currentUserSubject.next(response.user);
+        }
+      }),
+      catchError(this.handleError.bind(this))
+    );
   }
 }

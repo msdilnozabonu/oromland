@@ -259,7 +259,7 @@ export class NotificationService {
         timestamp: new Date(Date.now() - 5 * 60 * 1000),
         read: false,
         priority: 'high',
-        actionUrl: '/dashboard1/operator/messages',
+        actionUrl: '/dashboard/operator/messages',
         metadata: { userId: 'user123', userName: 'John Doe' }
       },
       {
@@ -270,7 +270,7 @@ export class NotificationService {
         timestamp: new Date(Date.now() - 15 * 60 * 1000),
         read: false,
         priority: 'medium',
-        actionUrl: '/dashboard1/operator/calls',
+        actionUrl: '/dashboard/operator/calls',
         metadata: { phoneNumber: '+998 90 123 45 67' }
       },
       {
@@ -281,7 +281,7 @@ export class NotificationService {
         timestamp: new Date(Date.now() - 30 * 60 * 1000),
         read: false,
         priority: 'low',
-        actionUrl: '/dashboard1/operator/feedbacks',
+        actionUrl: '/dashboard/operator/feedbacks',
         metadata: { rating: 5, placeId: 'camp2' }
       },
       {
@@ -292,7 +292,7 @@ export class NotificationService {
         timestamp: new Date(Date.now() - 45 * 60 * 1000),
         read: true,
         priority: 'high',
-        actionUrl: '/dashboard1/operator/bookings',
+        actionUrl: '/dashboard/operator/bookings',
         metadata: { bookingId: 'book456', placeId: 'san1' }
       },
       {

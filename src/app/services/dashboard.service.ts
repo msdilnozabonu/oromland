@@ -25,13 +25,13 @@ export class DashboardService {
     // Super Admin (roleId: 1)
     1: {
       displayName: 'Super Administrator',
-      defaultRoute: '/dashboard1/super-admin/overview',
+      defaultRoute: '/dashboard/super-admin/overview',
       permissions: ['*'],
       navigationItems: [
         {
           label: 'Overview',
           icon: 'dashboard',
-          route: '/dashboard1/super-admin/overview',
+          route: '/dashboard/super-admin/overview',
           exact: true
         }
       ]
@@ -39,13 +39,13 @@ export class DashboardService {
     // Admin (roleId: 2)
     2: {
       displayName: 'Administrator',
-      defaultRoute: '/dashboard1/admin/overview',
+      defaultRoute: '/dashboard/admin/overview',
       permissions: ['manage_camps', 'manage_sanatoriums', 'manage_users', 'manage_bookings'],
       navigationItems: [
         {
           label: 'Overview',
           icon: 'dashboard',
-          route: '/dashboard1/admin/overview',
+          route: '/dashboard/admin/overview',
           exact: true
         }
       ]
@@ -53,13 +53,13 @@ export class DashboardService {
     // Manager (roleId: 3)
     3: {
       displayName: 'Manager',
-      defaultRoute: '/dashboard1/manager/overview',
+      defaultRoute: '/dashboard/manager/overview',
       permissions: ['manage_assigned_places', 'manage_documents'],
       navigationItems: [
         {
           label: 'Overview',
           icon: 'dashboard',
-          route: '/dashboard1/manager/overview',
+          route: '/dashboard/manager/overview',
           exact: true
         }
       ]
@@ -67,13 +67,13 @@ export class DashboardService {
     // Operator (roleId: 4)
     4: {
       displayName: 'Operator',
-      defaultRoute: '/dashboard1/operator/overview',
+      defaultRoute: '/dashboard/operator/overview',
       permissions: ['manage_users', 'manage_documents', 'manage_feedbacks'],
       navigationItems: [
         {
           label: 'Overview',
           icon: 'dashboard',
-          route: '/dashboard1/operator/overview',
+          route: '/dashboard/operator/overview',
           exact: true
         }
       ]
@@ -81,13 +81,13 @@ export class DashboardService {
     // User (roleId: 5)
     5: {
       displayName: 'User',
-      defaultRoute: '/dashboard1/user/overview',
+      defaultRoute: '/dashboard/user/overview',
       permissions: ['view_own_data', 'create_bookings'],
       navigationItems: [
         {
           label: 'Overview',
           icon: 'dashboard',
-          route: '/dashboard1/user/overview',
+          route: '/dashboard/user/overview',
           exact: true
         }
       ]

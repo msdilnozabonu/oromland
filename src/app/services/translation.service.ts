@@ -3,7 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { TranslateService } from '@ngx-translate/core';
 import { BehaviorSubject } from 'rxjs';
 
-export type LanguageCode = 'en' | 'ru' | 'uz';
+export type LanguageCode = 'eng' | 'ru' | 'uz';
 
 export interface Language {
   code: LanguageCode;
@@ -23,11 +23,11 @@ export class TranslationService {
   public readonly languages: Language[] = [
     { code: 'uz', name: 'O\'zbekcha', flag: '/assets/flags/uz.png' },
     { code: 'ru', name: 'Русский', flag: '/assets/flags/ru.png' },
-    { code: 'en', name: 'English', flag: '/assets/flags/en.png' }
+    { code: 'eng', name: 'English', flag: '/assets/flags/en.png' }
   ];
 
   private readonly flagCodes: Record<LanguageCode, string> = {
-    en: '/assets/flags/en.png',
+    eng: '/assets/flags/en.png',
     ru: '/assets/flags/ru.png',
     uz: '/assets/flags/uz.png'
   };
@@ -82,7 +82,7 @@ export class TranslationService {
 
   getLanguageShortName(lang: LanguageCode): string {
     const shortNames: Record<LanguageCode, string> = {
-      en: 'Eng',
+      eng: 'Eng',
       ru: 'Rus',
       uz: 'Uz'
     };

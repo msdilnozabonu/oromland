@@ -1,0 +1,8 @@
+{
+  "/api": {
+    "target": "https://oromland.uz",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "debug"
+  }
+}

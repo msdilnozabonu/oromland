@@ -36,6 +36,7 @@
     "@netlify/angular-runtime": "^2.4.0",
     "@ng-bootstrap/ng-bootstrap": "^19.0.0",
     "@ngx-translate/core": "^16.0.4",
+    "@ngx-translate/http-loader": "^16.0.1",
     "bootstrap": "^5.3.7",
     "express": "^5.1.0",
     "ngx-cookie-service": "^20.0.1",

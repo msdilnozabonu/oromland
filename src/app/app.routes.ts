@@ -64,39 +64,39 @@ export const routes: Routes = [
     data: { type: 'SANATORIUM' }
   },
 
-  // Dashboard1 routes with new layout
+  // dashboard routes with new layout
   {
-    path: 'dashboard1',
-    loadComponent: () => import('./dashboard1/dashboard.component').then(m => m.DashboardComponent),
+    path: 'dashboard',
+    loadComponent: () => import('./dashboard/dashboard.component').then(m => m.DashboardComponent),
     canActivate: [AuthGuard],
     children: [
       {
         path: 'super-admin',
-        loadChildren: () => import('./dashboard1/super-admin/super-admin.routes').then(m => m.superAdminRoutes),
+        loadChildren: () => import('./dashboard/super-admin/super-admin.routes').then(m => m.superAdminRoutes),
         canActivate: [RoleGuard],
         data: { roles: [UserRole.SUPER_ADMIN] }
       },
       {
         path: 'admin',
-        loadChildren: () => import('./dashboard1/admin/admin.routes').then(m => m.adminRoutes),
+        loadChildren: () => import('./dashboard/admin/admin.routes').then(m => m.adminRoutes),
         canActivate: [RoleGuard],
         data: { roles: [UserRole.ADMIN] }
       },
       {
         path: 'manager',
-        loadChildren: () => import('./dashboard1/manager/manager.routes').then(m => m.managerRoutes),
+        loadChildren: () => import('./dashboard/manager/manager.routes').then(m => m.managerRoutes),
         canActivate: [RoleGuard],
         data: { roles: [UserRole.MANAGER] }
       },
       {
         path: 'operator',
-        loadChildren: () => import('./dashboard1/operator/operator.routes').then(m => m.operatorRoutes),
+        loadChildren: () => import('./dashboard/operator/operator.routes').then(m => m.operatorRoutes),
         canActivate: [RoleGuard],
         data: { roles: [UserRole.OPERATOR] }
       },
       {
         path: 'user',
-        loadChildren: () => import('./dashboard1/user/user.routes').then(m => m.userRoutes),
+        loadChildren: () => import('./dashboard/user/user.routes').then(m => m.userRoutes),
         canActivate: [RoleGuard],
         data: { roles: [UserRole.USER] }
       },

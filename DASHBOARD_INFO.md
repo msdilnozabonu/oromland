@@ -14,7 +14,7 @@
 
 ### 1. SuperAdmin Dashboard
 **Access:** Full system control
-**Base URL:** `/dashboard1/super-admin`
+**Base URL:** `/dashboard/super-admin`
 
 **Key Features:**
 - **Overview:**
@@ -83,7 +83,7 @@ POST /dashboard/super-admin/dismiss/{userId} – Remove role from a user
 
 ### 2. Admin Dashboard
 **Access:** Almost full control (except modifying SuperAdmin/Admin roles)
-**Base URL:** `/dashboard1/admin`
+**Base URL:** `/dashboard/admin`
 
 **Key Features:**
 - **Overview:**
@@ -107,7 +107,7 @@ POST /dashboard/admin/dismiss/{userId} – Remove role from a user
 
 ### 3. Manager Dashboard
 **Access:** Assigned camps/sanatoriums only
-**Base URL:** `/dashboard1/manager`
+**Base URL:** `/dashboard/manager`
 
 **Key Features:**
 - **Overview:**
@@ -144,7 +144,7 @@ POST /dashboard/manager/documents/{id}/reject – Reject document
 
 ### 4. Operator Dashboard
 **Access:** Read-only + limited actions
-**Base URL:** `/dashboard1/operator`
+**Base URL:** `/dashboard/operator`
 
 **Key Features:**
 - **Overview:**
@@ -177,7 +177,7 @@ GET /dashboard/operator/feedbacks – Manager feedbacks
 
 ### 5. User Dashboard
 **Access:** Personal data only
-**Base URL:** `/dashboard1/user`
+**Base URL:** `/dashboard/user`
 
 **Key Features:**
 - **Overview:**
@@ -267,11 +267,11 @@ GET /dashboard/user/feedbacks/{id} – Feedback details
 ## Access URLs
 
 After logging in with the credentials above:
-- SuperAdmin: `http://localhost:4201/dashboard1/super-admin/overview`
-- Admin: `http://localhost:4201/dashboard1/admin/overview`
-- Manager: `http://localhost:4201/dashboard1/manager/overview`
-- Operator: `http://localhost:4201/dashboard1/operator/overview`
-- User: `http://localhost:4201/dashboard1/user/overview`
+- SuperAdmin: `http://localhost:4201/dashboard/super-admin/overview`
+- Admin: `http://localhost:4201/dashboard/admin/overview`
+- Manager: `http://localhost:4201/dashboard/manager/overview`
+- Operator: `http://localhost:4201/dashboard/operator/overview`
+- User: `http://localhost:4201/dashboard/user/overview`
 
 ## Notes
 
