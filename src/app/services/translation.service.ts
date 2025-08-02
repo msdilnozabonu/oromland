@@ -20,19 +20,19 @@ export interface Language {
   providedIn: 'root'
 })
 export class TranslationService {
-  private currentLanguageSubject = new BehaviorSubject<LanguageCode>('uz');
+  private currentLanguageSubject = new BehaviorSubject<LanguageCode>('eng');
   public currentLanguage$ = this.currentLanguageSubject.asObservable();
   
-  public activeLang: LanguageCode = 'uz';
+  public activeLang: LanguageCode = 'eng';
   private translationsLoaded = false;
   private apiUrl = `${environment.apiUrl}/translations`;
 
   public readonly languages: Language[] = [
     { 
-      code: 'uz', 
-      name: 'O\'zbekcha', 
-      nativeName: 'Oʻzbekcha', 
-      flag: '/assets/flags/uz.png',
+      code: 'eng', 
+      name: 'English', 
+      nativeName: 'English', 
+      flag: '/assets/flags/en.png',
       direction: 'ltr'
     },
     { 
@@ -71,9 +71,9 @@ export class TranslationService {
   }
 
   private initializeLanguage(): void {
-    let savedLanguage: LanguageCode = 'uz';
+    let savedLanguage: LanguageCode = 'eng';
     if (isPlatformBrowser(this.platformId)) {
-      savedLanguage = (localStorage.getItem('language') as LanguageCode) || 'uz';
+      savedLanguage = (localStorage.getItem('language') as LanguageCode) || 'eng';
       
       // Check browser language if no saved preference
       if (!localStorage.getItem('language')) {
@@ -154,6 +154,10 @@ export class TranslationService {
     return language ? language.flag : '/assets/flags/default.png';
   }
 
+  getFlagCode(code: LanguageCode): string {
+    return this.getLanguageFlag(code);
+  }
+
   getLanguageDirection(code: LanguageCode): 'ltr' | 'rtl' {
     const language = this.languages.find(lang => lang.code === code);
     return language ? language.direction : 'ltr';
@@ -210,7 +214,7 @@ export class TranslationService {
    */
   detectLanguage(): Observable<LanguageCode> {
     if (!isPlatformBrowser(this.platformId)) {
-      return of('uz');
+      return of('eng');
     }
 
     // 1. Check saved preference
@@ -225,17 +229,13 @@ export class TranslationService {
       return of(browserLang as LanguageCode);
     }
 
-    // 3. Check browser languages (multiple)
-    const browserLangs = this.translate.getBrowserLangs();
-    if (browserLangs) {
-      for (const lang of browserLangs) {
-        if (['uz', 'ru', 'eng'].includes(lang)) {
-          return of(lang as LanguageCode);
-        }
-      }
+    // 3. Check browser languages (multiple) - using getBrowserLang as fallback
+    const browserLangFallback = this.translate.getBrowserLang();
+    if (browserLangFallback && ['uz', 'ru', 'eng'].includes(browserLangFallback)) {
+      return of(browserLangFallback as LanguageCode);
     }
 
     // 4. Default to Uzbek
-    return of('en');
+    return of('eng');
   }
 }

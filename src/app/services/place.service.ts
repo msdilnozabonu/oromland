@@ -11,6 +11,7 @@ import {
   Gender, 
   Season 
 } from '../models/place.model';
+import { MockDataService } from './mock-data.service';
 
 export interface PlaceSearchParams {
   cityId?: number;
@@ -33,12 +34,7 @@ export class PlaceService {
   private apiUrl = `${environment.apiUrl}/places`;
   private useMockData = false;
 
-  // Mock data (same as your implementation)
-  private mockCities: City[] = [...];
-  private mockPlaces: Place[] = [...];
-  private mockGroups: Group[] = [...];
-
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private mockDataService: MockDataService) {
     this.checkBackendAvailability().subscribe(available => {
       this.useMockData = !available;
       if (this.useMockData) {
@@ -57,35 +53,35 @@ export class PlaceService {
   // Cities
   getCities(): Observable<City[]> {
     if (this.useMockData) {
-      return of(this.mockCities);
+      return of(this.mockDataService.cities);
     }
     return this.http.get<City[]>(`${environment.apiUrl}/cities`).pipe(
-      catchError(() => of(this.mockCities))
+      catchError(() => of(this.mockDataService.cities))
     );
   }
 
   // Places
   getTopPlaces(): Observable<Place[]> {
     if (this.useMockData) {
-      return of(this.mockPlaces.slice(0, 4)); // Return first 4 as "top"
+      return of(this.mockDataService.places.slice(0, 4)); // Return first 4 as "top"
     }
     return this.http.get<Place[]>(`${this.apiUrl}/top`).pipe(
-      catchError(() => of(this.mockPlaces.slice(0, 4)))
+      catchError(() => of(this.mockDataService.places.slice(0, 4)))
     );
   }
 
   getAllPlaces(): Observable<Place[]> {
     if (this.useMockData) {
-      return of(this.mockPlaces);
+      return of(this.mockDataService.places);
     }
     return this.http.get<Place[]>(this.apiUrl).pipe(
-      catchError(() => of(this.mockPlaces))
+      catchError(() => of(this.mockDataService.places))
     );
   }
 
   getCamps(cityId?: number): Observable<Place[]> {
     if (this.useMockData) {
-      let camps = this.mockPlaces.filter(p => p.type === PlaceType.CAMP);
+      let camps = this.mockDataService.places.filter(p => p.type === PlaceType.CAMP);
       if (cityId) {
         camps = camps.filter(p => p.city?.id === cityId);
       }
@@ -99,7 +95,7 @@ export class PlaceService {
 
     return this.http.get<Place[]>(this.apiUrl, { params }).pipe(
       catchError(() => {
-        let camps = this.mockPlaces.filter(p => p.type === PlaceType.CAMP);
+        let camps = this.mockDataService.places.filter(p => p.type === PlaceType.CAMP);
         if (cityId) {
           camps = camps.filter(p => p.city?.id === cityId);
         }
@@ -110,7 +106,7 @@ export class PlaceService {
 
   getSanatoriums(cityId?: number): Observable<Place[]> {
     if (this.useMockData) {
-      let sanatoriums = this.mockPlaces.filter(p => p.type === PlaceType.SANATORIUM);
+      let sanatoriums = this.mockDataService.places.filter(p => p.type === PlaceType.SANATORIUM);
       if (cityId) {
         sanatoriums = sanatoriums.filter(p => p.city?.id === cityId);
       }
@@ -124,7 +120,7 @@ export class PlaceService {
 
     return this.http.get<Place[]>(this.apiUrl, { params }).pipe(
       catchError(() => {
-        let sanatoriums = this.mockPlaces.filter(p => p.type === PlaceType.SANATORIUM);
+        let sanatoriums = this.mockDataService.places.filter(p => p.type === PlaceType.SANATORIUM);
         if (cityId) {
           sanatoriums = sanatoriums.filter(p => p.city?.id === cityId);
         }
@@ -135,7 +131,7 @@ export class PlaceService {
 
   getPlaceById(id: number): Observable<Place> {
     if (this.useMockData) {
-      const place = this.mockPlaces.find(p => p.id === id);
+      const place = this.mockDataService.places.find(p => p.id === id);
       if (place) {
         return of(place);
       }
@@ -144,7 +140,7 @@ export class PlaceService {
 
     return this.http.get<Place>(`${this.apiUrl}/${id}`).pipe(
       catchError(() => {
-        const place = this.mockPlaces.find(p => p.id === id);
+        const place = this.mockDataService.places.find(p => p.id === id);
         if (place) {
           return of(place);
         }
@@ -156,7 +152,7 @@ export class PlaceService {
   // Groups
   getPlaceGroups(placeId: number, searchParams?: PlaceSearchParams): Observable<Group[]> {
     if (this.useMockData) {
-      let groups = this.mockGroups.filter(g => g.placeId === placeId);
+      let groups = this.mockDataService.groups.filter(g => g.placeId === placeId);
       
       if (searchParams?.gender && searchParams.gender !== Gender.BOTH) {
         groups = groups.filter(g => g.gender === searchParams.gender || g.gender === Gender.BOTH);
@@ -172,7 +168,7 @@ export class PlaceService {
 
     return this.http.get<Group[]>(`${this.apiUrl}/${placeId}/groups`, { params }).pipe(
       catchError(() => {
-        let groups = this.mockGroups.filter(g => g.placeId === placeId);
+        let groups = this.mockDataService.groups.filter(g => g.placeId === placeId);
         if (searchParams?.gender && searchParams.gender !== Gender.BOTH) {
           groups = groups.filter(g => g.gender === searchParams.gender || g.gender === Gender.BOTH);
         }
@@ -184,7 +180,7 @@ export class PlaceService {
   // Search
   searchPlaces(searchParams: PlaceSearchParams): Observable<{ content: Place[], totalElements: number }> {
     if (this.useMockData) {
-      let places = [...this.mockPlaces];
+      let places = [...this.mockDataService.places];
       
       if (searchParams.cityId) {
         places = places.filter(p => p.city?.id === searchParams.cityId);
@@ -221,7 +217,7 @@ export class PlaceService {
 
     return this.http.get<{ content: Place[], totalElements: number }>(`${this.apiUrl}/search`, { params }).pipe(
       catchError(() => {
-        let places = [...this.mockPlaces];
+        let places = [...this.mockDataService.places];
         
         if (searchParams.cityId) {
           places = places.filter(p => p.city?.id === searchParams.cityId);
@@ -251,7 +247,7 @@ export class PlaceService {
   createPlace(place: Partial<Place>): Observable<Place> {
     if (this.useMockData) {
       const newPlace: Place = {
-        id: this.mockPlaces.length + 1,
+        id: this.mockDataService.places.length + 1,
         name: place.name || 'New Place',
         description: place.description || {
           'uz': 'Yangi joy',
@@ -263,7 +259,7 @@ export class PlaceService {
         locationId: place.locationId || 1,
         availableSeasons: place.availableSeasons || [Season.SUMMER],
         createdBy: place.createdBy || 1,
-        city: place.city || this.mockCities[0],
+        city: place.city || this.mockDataService.cities[0],
         location: place.location || { id: 1, latitude: 41.2995, longitude: 69.2401 },
         images: place.images || [],
         rating: place.rating || 0,
@@ -271,7 +267,7 @@ export class PlaceService {
         amenities: place.amenities || []
       };
       
-      this.mockPlaces.push(newPlace);
+      this.mockDataService.places.push(newPlace);
       return of(newPlace);
     }
 
@@ -284,10 +280,10 @@ export class PlaceService {
 
   updatePlace(id: number, place: Partial<Place>): Observable<Place> {
     if (this.useMockData) {
-      const index = this.mockPlaces.findIndex(p => p.id === id);
+      const index = this.mockDataService.places.findIndex(p => p.id === id);
       if (index !== -1) {
-        this.mockPlaces[index] = { ...this.mockPlaces[index], ...place };
-        return of(this.mockPlaces[index]);
+        this.mockDataService.places[index] = { ...this.mockDataService.places[index], ...place };
+        return of(this.mockDataService.places[index]);
       }
       throw new Error('Place not found');
     }
@@ -301,9 +297,9 @@ export class PlaceService {
 
   deletePlace(id: number): Observable<void> {
     if (this.useMockData) {
-      const index = this.mockPlaces.findIndex(p => p.id === id);
+      const index = this.mockDataService.places.findIndex(p => p.id === id);
       if (index !== -1) {
-        this.mockPlaces.splice(index, 1);
+        this.mockDataService.places.splice(index, 1);
         return of(void 0);
       }
       throw new Error('Place not found');
@@ -320,7 +316,7 @@ export class PlaceService {
   createGroup(group: Partial<Group>): Observable<Group> {
     if (this.useMockData) {
       const newGroup: Group = {
-        id: this.mockGroups.length + 1,
+        id: this.mockDataService.groups.length + 1,
         placeId: group.placeId || 1,
         gender: group.gender || Gender.BOTH,
         ageRangeStart: group.ageRangeStart || 18,
@@ -331,7 +327,7 @@ export class PlaceService {
         updatedAt: new Date().toISOString()
       };
       
-      this.mockGroups.push(newGroup);
+      this.mockDataService.groups.push(newGroup);
       return of(newGroup);
     }
 
@@ -344,10 +340,10 @@ export class PlaceService {
 
   updateGroup(id: number, group: Partial<Group>): Observable<Group> {
     if (this.useMockData) {
-      const index = this.mockGroups.findIndex(g => g.id === id);
+      const index = this.mockDataService.groups.findIndex((g: Group) => g.id === id);
       if (index !== -1) {
-        this.mockGroups[index] = { ...this.mockGroups[index], ...group };
-        return of(this.mockGroups[index]);
+        this.mockDataService.groups[index] = { ...this.mockDataService.groups[index], ...group };
+        return of(this.mockDataService.groups[index]);
       }
       throw new Error('Group not found');
     }
@@ -361,9 +357,9 @@ export class PlaceService {
 
   deleteGroup(id: number): Observable<void> {
     if (this.useMockData) {
-      const index = this.mockGroups.findIndex(g => g.id === id);
+      const index = this.mockDataService.groups.findIndex((g: Group) => g.id === id);
       if (index !== -1) {
-        this.mockGroups.splice(index, 1);
+        this.mockDataService.groups.splice(index, 1);
         return of(void 0);
       }
       throw new Error('Group not found');

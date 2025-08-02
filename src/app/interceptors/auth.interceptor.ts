@@ -103,12 +103,15 @@ export class AuthInterceptor implements HttpInterceptor {
 
   private isPublicEndpoint(url: string): boolean {
     const publicEndpoints = [
+      '/auth/Login',
       '/auth/login',
       '/auth/register',
       '/auth/forgot-password',
       '/auth/reset-password',
       '/auth/verify',
-      '/auth/refresh'
+      '/auth/refresh',
+      '/open/',
+      'health'
     ];
     
     return publicEndpoints.some(endpoint => url.includes(endpoint));

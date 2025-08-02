@@ -15,8 +15,7 @@ import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angula
 import { AuthService } from '../../../services/auth.service';
 import { BookingDialogComponent } from '../booking-dialog/booking-dialog.component';
 import { FeedbackDialogComponent } from '../feedback-dialog/feedback-dialog.component';
-import { ImageCardComponent, ImageCardData } from '../../../shared/components/image-card/image-card.component';
-import { ImageService } from '../../../shared/services/image.service';
+
 
 interface RecentActivity {
   type: 'booking' | 'document' | 'feedback';
@@ -36,8 +35,7 @@ interface RecentActivity {
     MatButtonModule,
     MatIconModule,
     MatBadgeModule,
-    MatDialogModule,
-    ImageCardComponent
+    MatDialogModule
   ],
   template: `
     <div class="user-overview-container">

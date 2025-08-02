@@ -1,12 +1,16 @@
 export interface City {
   id: number;
   name: string;
+  region?: string;
+  population?: number;
+  description?: string;
 }
 
 export interface Location {
   id: number;
   latitude: number;
   longitude: number;
+  address?: string;
 }
 
 export interface Place {
@@ -21,7 +25,7 @@ export interface Place {
   city?: City;
   location?: Location;
   groups?: Group[];
-  images?: string[];
+  images?: string[] | { url: string; alt: string }[];
   price?: number;
   rating?: number;
   amenities?: string[];
@@ -30,11 +34,17 @@ export interface Place {
   ageRange?: string;
   features?: string[];
   shortDescription?: string;
+  capacity?: number;
+  contactPhone?: string;
+  contactEmail?: string;
+  facilities?: string[];
+  rules?: string[];
 }
 
 export interface Group {
   id: number;
   placeId: number;
+  name?: string;
   gender: Gender;
   ageRangeStart: number;
   ageRangeEnd: number;

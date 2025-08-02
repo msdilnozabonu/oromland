@@ -4,6 +4,8 @@ import { Observable, of, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { User, Role, UserRole, Gender, Permission } from '../models/user.model';
+import { MockDataService } from './mock-data.service';
+import { HttpErrorHandlerService } from './http-error-handler.service';
 
 export interface UserSearchParams {
   search?: string;
@@ -25,17 +27,17 @@ export interface PaginatedResponse<T> {
   providedIn: 'root'
 })
 export class UserService {
-  private apiUrl = `${environment.apiUrl}/users`;
-  private rolesUrl = `${environment.apiUrl}/roles`;
+  private apiUrl = `${environment.apiUrl}${environment.apiEndpoints.user}`;
+  private rolesUrl = `${environment.apiUrl}${environment.apiEndpoints.roles}`;
   private useMockData = false;
-
-  // Mock data (same as your implementation)
-  private mockUsers: User[] = [...];
-  private mockRoles: Role[] = [...];
   private nextUserId = 3;
   private nextRoleId = 6;
 
-  constructor(private http: HttpClient) {
+  constructor(
+    private http: HttpClient, 
+    private mockDataService: MockDataService,
+    private errorHandler: HttpErrorHandlerService
+  ) {
     this.checkBackendAvailability().subscribe(available => {
       this.useMockData = !available;
       if (this.useMockData) {
@@ -45,31 +47,35 @@ export class UserService {
   }
 
   private checkBackendAvailability(): Observable<boolean> {
-    return this.http.get(`${this.apiUrl}/health`, { observe: 'response' }).pipe(
+    // Try a simple endpoint to check if backend is available
+    return this.http.get(`${environment.apiUrl}/dashboard`, { observe: 'response' }).pipe(
       map(response => response.status === 200),
-      catchError(() => of(false))
+      catchError((error) => {
+        console.warn('Backend availability check failed:', error);
+        return of(false);
+      })
     );
   }
 
   // Profile management
   getProfile(): Observable<User> {
     if (this.useMockData) {
-      return of(this.mockUsers[0]);
+      return of(this.mockDataService.users[0]);
     }
     return this.http.get<User>(`${this.apiUrl}/profile`).pipe(
-      catchError(() => of(this.mockUsers[0]))
+      catchError(() => of(this.mockDataService.users[0]))
     );
   }
 
   updateProfile(profile: Partial<User>): Observable<User> {
     if (this.useMockData) {
-      this.mockUsers[0] = { ...this.mockUsers[0], ...profile };
-      return of(this.mockUsers[0]);
+      this.mockDataService.users[0] = { ...this.mockDataService.users[0], ...profile };
+      return of(this.mockDataService.users[0]);
     }
     return this.http.put<User>(`${this.apiUrl}/profile`, profile).pipe(
       catchError(error => {
-        this.mockUsers[0] = { ...this.mockUsers[0], ...profile };
-        return of(this.mockUsers[0]);
+        this.mockDataService.users[0] = { ...this.mockDataService.users[0], ...profile };
+        return of(this.mockDataService.users[0]);
       })
     );
   }
@@ -89,7 +95,7 @@ export class UserService {
   // User management
   getAllUsers(searchParams?: UserSearchParams): Observable<PaginatedResponse<User>> {
     if (this.useMockData) {
-      let users = [...this.mockUsers];
+      let users = [...this.mockDataService.users];
       
       if (searchParams?.search) {
         const search = searchParams.search.toLowerCase();
@@ -128,7 +134,7 @@ export class UserService {
 
     return this.http.get<PaginatedResponse<User>>(this.apiUrl, { params }).pipe(
       catchError(error => {
-        let users = [...this.mockUsers];
+        let users = [...this.mockDataService.users];
         if (searchParams?.search) {
           const search = searchParams.search.toLowerCase();
           users = users.filter(u => 
@@ -151,7 +157,7 @@ export class UserService {
 
   getUserById(id: number): Observable<User> {
     if (this.useMockData) {
-      const user = this.mockUsers.find(u => u.userId === id);
+      const user = this.mockDataService.users.find((u: User) => u.userId === id);
       if (user) {
         return of(user);
       }
@@ -159,7 +165,7 @@ export class UserService {
     }
     return this.http.get<User>(`${this.apiUrl}/${id}`).pipe(
       catchError(error => {
-        const user = this.mockUsers.find(u => u.userId === id);
+        const user = this.mockDataService.users.find((u: User) => u.userId === id);
         if (user) {
           return of(user);
         }
@@ -184,7 +190,7 @@ export class UserService {
         isActive: user.isActive !== undefined ? user.isActive : true
       };
       
-      this.mockUsers.push(newUser);
+      this.mockDataService.users.push(newUser);
       return of(newUser);
     }
     return this.http.post<User>(this.apiUrl, user).pipe(
@@ -194,10 +200,10 @@ export class UserService {
 
   updateUser(id: number, user: Partial<User>): Observable<User> {
     if (this.useMockData) {
-      const index = this.mockUsers.findIndex(u => u.userId === id);
+      const index = this.mockDataService.users.findIndex((u: User) => u.userId === id);
       if (index !== -1) {
-        this.mockUsers[index] = { ...this.mockUsers[index], ...user };
-        return of(this.mockUsers[index]);
+        this.mockDataService.users[index] = { ...this.mockDataService.users[index], ...user };
+        return of(this.mockDataService.users[index]);
       }
       return throwError(() => new Error('User not found'));
     }
@@ -208,9 +214,9 @@ export class UserService {
 
   deleteUser(id: number): Observable<void> {
     if (this.useMockData) {
-      const index = this.mockUsers.findIndex(u => u.userId === id);
+      const index = this.mockDataService.users.findIndex((u: User) => u.userId === id);
       if (index !== -1) {
-        this.mockUsers.splice(index, 1);
+        this.mockDataService.users.splice(index, 1);
         return of(void 0);
       }
       return throwError(() => new Error('User not found'));
@@ -222,10 +228,10 @@ export class UserService {
 
   activateUser(id: number): Observable<User> {
     if (this.useMockData) {
-      const index = this.mockUsers.findIndex(u => u.userId === id);
+      const index = this.mockDataService.users.findIndex((u: User) => u.userId === id);
       if (index !== -1) {
-        this.mockUsers[index].isActive = true;
-        return of(this.mockUsers[index]);
+        this.mockDataService.users[index].isActive = true;
+        return of(this.mockDataService.users[index]);
       }
       return throwError(() => new Error('User not found'));
     }
@@ -236,10 +242,10 @@ export class UserService {
 
   deactivateUser(id: number): Observable<User> {
     if (this.useMockData) {
-      const index = this.mockUsers.findIndex(u => u.userId === id);
+      const index = this.mockDataService.users.findIndex((u: User) => u.userId === id);
       if (index !== -1) {
-        this.mockUsers[index].isActive = false;
-        return of(this.mockUsers[index]);
+        this.mockDataService.users[index].isActive = false;
+        return of(this.mockDataService.users[index]);
       }
       return throwError(() => new Error('User not found'));
     }
@@ -251,22 +257,22 @@ export class UserService {
   // Role management
   getAllRoles(): Observable<Role[]> {
     if (this.useMockData) {
-      return of(this.mockRoles);
+      return of(this.mockDataService.roles);
     }
     return this.http.get<Role[]>(this.rolesUrl).pipe(
-      catchError(() => of(this.mockRoles))
+      catchError(() => of(this.mockDataService.roles))
     );
   }
 
   assignRole(userId: number, roleId: number): Observable<User> {
     if (this.useMockData) {
-      const userIndex = this.mockUsers.findIndex(u => u.userId === userId);
-      const role = this.mockRoles.find(r => r.id === roleId);
+      const userIndex = this.mockDataService.users.findIndex((u: User) => u.userId === userId);
+      const role = this.mockDataService.roles.find((r: Role) => r.id === roleId);
       
       if (userIndex !== -1 && role) {
-        this.mockUsers[userIndex].role = role;
-        this.mockUsers[userIndex].roleId = roleId;
-        return of(this.mockUsers[userIndex]);
+        this.mockDataService.users[userIndex].role = role;
+        this.mockDataService.users[userIndex].roleId = roleId;
+        return of(this.mockDataService.users[userIndex]);
       }
       return throwError(() => new Error('User or role not found'));
     }
@@ -277,11 +283,11 @@ export class UserService {
 
   removeRole(userId: number): Observable<User> {
     if (this.useMockData) {
-      const userIndex = this.mockUsers.findIndex(u => u.userId === userId);
+      const userIndex = this.mockDataService.users.findIndex((u: User) => u.userId === userId);
       if (userIndex !== -1) {
-        this.mockUsers[userIndex].role = { id: 5, name: UserRole.USER, permissions: [Permission.READ_USER, Permission.CREATE_BOOKING] };
-        this.mockUsers[userIndex].roleId = 5;
-        return of(this.mockUsers[userIndex]);
+        this.mockDataService.users[userIndex].role = { id: 5, name: UserRole.USER, permissions: [Permission.READ_USER, Permission.CREATE_BOOKING] };
+        this.mockDataService.users[userIndex].roleId = 5;
+        return of(this.mockDataService.users[userIndex]);
       }
       return throwError(() => new Error('User not found'));
     }
@@ -298,7 +304,7 @@ export class UserService {
         permissions: role.permissions || [Permission.READ_USER]
       };
       
-      this.mockRoles.push(newRole);
+      this.mockDataService.roles.push(newRole);
       return of(newRole);
     }
     return this.http.post<Role>(this.rolesUrl, role).pipe(
@@ -308,10 +314,10 @@ export class UserService {
 
   updateRole(id: number, role: Partial<Role>): Observable<Role> {
     if (this.useMockData) {
-      const index = this.mockRoles.findIndex(r => r.id === id);
+      const index = this.mockDataService.roles.findIndex((r: Role) => r.id === id);
       if (index !== -1) {
-        this.mockRoles[index] = { ...this.mockRoles[index], ...role };
-        return of(this.mockRoles[index]);
+        this.mockDataService.roles[index] = { ...this.mockDataService.roles[index], ...role };
+        return of(this.mockDataService.roles[index]);
       }
       return throwError(() => new Error('Role not found'));
     }
@@ -322,9 +328,9 @@ export class UserService {
 
   deleteRole(id: number): Observable<void> {
     if (this.useMockData) {
-      const index = this.mockRoles.findIndex(r => r.id === id);
+      const index = this.mockDataService.roles.findIndex((r: Role) => r.id === id);
       if (index !== -1) {
-        this.mockRoles.splice(index, 1);
+        this.mockDataService.roles.splice(index, 1);
         return of(void 0);
       }
       return throwError(() => new Error('Role not found'));

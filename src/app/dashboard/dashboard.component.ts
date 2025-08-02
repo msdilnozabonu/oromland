@@ -10,7 +10,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatBadgeModule } from '@angular/material/badge';
 import { AuthService } from '../services/auth.service';
 import { DashboardService, NavigationItem, DashboardConfig } from '../services/dashboard.service';
-import { User } from '../models/user.model';
+import { User, UserRole } from '../models/user.model';
 
 @Component({
   selector: 'app-dashboard',
@@ -266,9 +266,26 @@ export class DashboardComponent implements OnInit {
       this.userName = `${this.currentUser.firstName} ${this.currentUser.lastName}`;
       this.userRole = this.currentUser.role.name;
       
+      const userRole = this.currentUser.role.name as UserRole;
+      
       // Load dashboard configuration
-      this.dashboardConfig = this.dashboardService.getDashboardConfig(this.currentUser.roleId);
-      this.navigationItems = this.dashboardService.getNavigationItems(this.currentUser.roleId);
+      this.dashboardService.getDashboardConfig(userRole).subscribe({
+        next: (config) => {
+          this.dashboardConfig = config;
+        },
+        error: (error) => {
+          console.error('Error loading dashboard config:', error);
+        }
+      });
+      
+      this.dashboardService.getNavigationItems(userRole).subscribe({
+        next: (items) => {
+          this.navigationItems = items;
+        },
+        error: (error) => {
+          console.error('Error loading navigation items:', error);
+        }
+      });
     }
   }
 

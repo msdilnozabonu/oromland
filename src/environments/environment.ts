@@ -8,7 +8,7 @@ export const environment = {
   apiUrl: 'https://oromland.uz/api',
   apiEndpoints: {
     auth: {
-      login: '/auth/login',
+      login: '/auth/Login',
       register: '/auth/register'
     },
     user: '/api/v1/user',

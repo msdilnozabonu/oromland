@@ -13,6 +13,26 @@ export class ContactsComponent {
   contactForm: FormGroup;
   submitted = false;
   loading = false;
+  openIndex: number | null = null;
+
+  faqs = [
+    {
+      question: 'How do I make a booking?',
+      answer: 'Simply browse our camps and sanatoriums, select your preferred location, choose dates, and complete the booking process with required documents.'
+    },
+    {
+      question: 'What documents are required?',
+      answer: 'You\'ll need to upload identification documents, medical certificates (for sanatoriums), and any specific documents required by the facility.'
+    },
+    {
+      question: 'Can I cancel my booking?',
+      answer: 'Yes, you can cancel your booking through your dashboard. Cancellation policies vary by facility and timing.'
+    },
+    {
+      question: 'Is customer support available 24/7?',
+      answer: 'Yes, our customer support team is available 24/7 to assist you with any questions or concerns.'
+    }
+  ];
 
   constructor(private fb: FormBuilder) {
     this.contactForm = this.fb.group({
@@ -38,7 +58,15 @@ export class ContactsComponent {
       }, 2000);
     }
   }
+toggle(index: number): void {
+  this.openIndex = this.openIndex === index ? null : index;
+}
 
+isOpen(index: number): boolean {
+  return this.openIndex === index;
+}
+
+  // Form control getters
   get name() { return this.contactForm.get('name'); }
   get email() { return this.contactForm.get('email'); }
   get phone() { return this.contactForm.get('phone'); }

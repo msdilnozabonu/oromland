@@ -27,7 +27,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute
   ) {}
   ngOnDestroy(): void {
-    throw new Error('Method not implemented.');
+    // Clean up any subscriptions or resources if needed
   }
 
   ngOnInit(): void {
@@ -102,7 +102,7 @@ export class LoginComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.authService.login(sanitizedUsername, password).subscribe({
+    this.authService.login({ username: sanitizedUsername, password }).subscribe({
       next: (response) => {
         this.loading = false;
         // Clear sensitive data

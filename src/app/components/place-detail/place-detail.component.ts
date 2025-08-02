@@ -70,7 +70,8 @@ export class PlaceDetailComponent implements OnInit {
   }
 
   loadFeedbacks() {
-    this.feedbackService.getPlaceFeedbacks(this.placeId, 0, 5).subscribe({
+    const placeTypeString = this.placeType === PlaceType.SANATORIUM ? 'sanatorium' : 'camp';
+    this.feedbackService.getPlaceFeedbacks(this.placeId, placeTypeString, 0, 5).subscribe({
       next: (response) => {
         this.feedbacks = response.content;
       },

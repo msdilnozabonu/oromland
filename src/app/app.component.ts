@@ -18,8 +18,8 @@ import { User } from './models/user.model';
 export class App implements OnInit {
   title = 'oromland';
   currentUser: User | null = null;
-  currentLanguage: LanguageCode = 'uz';
-  activeLang: LanguageCode = 'uz';
+  currentLanguage: LanguageCode = 'eng';
+  activeLang: LanguageCode = 'eng';
   languages: Language[] = [];
   isMenuOpen = false;
   isDarkMode = false;
