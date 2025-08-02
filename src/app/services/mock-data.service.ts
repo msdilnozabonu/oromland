@@ -1,124 +1,212 @@
 import { Injectable } from '@angular/core';
-import { User, UserRole, Gender as UserGender, Permission } from '../models/user.model';
-import { Place, City, Group, PlaceType, Gender, Season } from '../models/place.model';
+import { Observable, of } from 'rxjs';
+import { 
+  User, 
+  UserRole, 
+  Gender as UserGender, 
+  Permission 
+} from '../models/user.model';
+import { 
+  Place, 
+  City, 
+  Group, 
+  PlaceType, 
+  Gender, 
+  Season,
+  Amenity
+} from '../models/place.model';
 import { Feedback } from '../models/feedback.model';
+import { Booking, BookingStatus } from '../models/booking.model';
+import { Document, DocumentStatus } from '../models/document.model';
+import { Child, Relationship } from '../models/child.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class MockDataService {
-  
-  // Mock Cities
+  // Current year for dynamic date generation
+  private currentYear = new Date().getFullYear();
+
+  // Mock Cities with additional details
   public readonly cities: City[] = [
-    { id: 1, name: 'Tashkent' },
-    { id: 2, name: 'Samarkand' },
-    { id: 3, name: 'Bukhara' },
-    { id: 4, name: 'Khiva' },
-    { id: 5, name: 'Fergana' }
+    { 
+      id: 1, 
+      name: 'Tashkent',
+      region: 'Tashkent Region',
+      population: 2570000,
+      description: 'Capital city of Uzbekistan with modern amenities'
+    },
+    { 
+      id: 2, 
+      name: 'Samarkand',
+      region: 'Samarkand Region',
+      population: 546000,
+      description: 'Ancient city with rich history and cultural heritage'
+    },
+    { 
+      id: 3, 
+      name: 'Bukhara',
+      region: 'Bukhara Region',
+      population: 280000,
+      description: 'Historic city along the Silk Road with well-preserved architecture'
+    },
+    { 
+      id: 4, 
+      name: 'Khiva',
+      region: 'Khorezm Region',
+      population: 90000,
+      description: 'Open-air museum city with ancient walls and monuments'
+    },
+    { 
+      id: 5, 
+      name: 'Fergana',
+      region: 'Fergana Region',
+      population: 288000,
+      description: 'City in the fertile Fergana Valley with traditional crafts'
+    }
   ];
 
-  // Mock Places
+  // Available amenities
+  public readonly amenities: Amenity[] = [
+    { id: 1, name: 'WiFi', icon: 'wifi' },
+    { id: 2, name: 'Pool', icon: 'pool' },
+    { id: 3, name: 'Restaurant', icon: 'restaurant' },
+    { id: 4, name: 'Gym', icon: 'fitness_center' },
+    { id: 5, name: 'Spa', icon: 'spa' },
+    { id: 6, name: 'Medical Care', icon: 'medical_services' },
+    { id: 7, name: 'Parking', icon: 'local_parking' },
+    { id: 8, name: 'Air Conditioning', icon: 'ac_unit' },
+    { id: 9, name: 'Laundry', icon: 'local_laundry_service' },
+    { id: 10, name: 'Playground', icon: 'child_friendly' }
+  ];
+
+  // Mock Places with enhanced details
   public readonly places: Place[] = [
     {
       id: 1,
       name: 'Mountain Resort Chimgan',
       description: {
-        'uz': 'Chimg\'on tog\' kurort',
-        'ru': 'Горный курорт Чимган',
-        'en': 'Beautiful mountain resort with great views and fresh air'
+        uz: 'Chimg\'on tog\' kurorti - ajoyib tabiat va dam olish maskani',
+        ru: 'Горный курорт Чимган - прекрасное место для отдыха на природе',
+        en: 'Chimgan Mountain Resort - wonderful nature retreat'
       },
       type: PlaceType.CAMP,
       cityId: 1,
-      locationId: 1,
-      availableSeasons: [Season.SUMMER, Season.SPRING],
-      createdBy: 1,
-      city: this.cities[0],
-      location: { id: 1, latitude: 41.6167, longitude: 70.0167 },
-      images: ['/assets/images/chimgan1.jpg', '/assets/images/chimgan2.jpg'],
+      location: { 
+        id: 1, 
+        latitude: 41.6167, 
+        longitude: 70.0167,
+        address: 'Chimgan Mountains, Tashkent Region'
+      },
+      availableSeasons: [Season.SUMMER, Season.SPRING, Season.WINTER],
+      images: [
+        { url: '/assets/images/chimgan1.jpg', alt: 'Chimgan mountain view' },
+        { url: '/assets/images/chimgan2.jpg', alt: 'Chimgan ski resort' }
+      ],
       rating: 4.5,
       price: 150,
-      amenities: ['WiFi', 'Pool', 'Restaurant', 'Hiking Trails', 'Ski Resort']
+      amenities: [1, 2, 3, 8], // WiFi, Pool, Restaurant, AC
+      capacity: 200,
+      contactPhone: '+998901234567',
+      contactEmail: 'info@chimganresort.uz',
+      facilities: [
+        'Ski equipment rental',
+        'Hiking trails',
+        'Cable car',
+        'Restaurant with local cuisine'
+      ],
+      rules: [
+        'Check-in after 14:00',
+        'Check-out before 12:00',
+        'No pets allowed',
+        'Quiet hours from 23:00 to 07:00'
+      ]
     },
     {
       id: 2,
       name: 'Samarkand Health Sanatorium',
       description: {
-        'uz': 'Samarqand sog\'liqni saqlash sanatoriysi',
-        'ru': 'Самаркандский санаторий здоровья',
-        'en': 'Modern sanatorium with medical facilities and spa treatments'
+        uz: 'Samarqand sog\'lomlashtirish sanatoriysi - zamonaviy tibbiy yordam',
+        ru: 'Самаркандский оздоровительный санаторий - современная медицинская помощь',
+        en: 'Samarkand Health Sanatorium - modern medical care'
       },
       type: PlaceType.SANATORIUM,
       cityId: 2,
-      locationId: 2,
-      availableSeasons: [Season.SUMMER, Season.SPRING, Season.AUTUMN],
-      createdBy: 1,
-      city: this.cities[1],
-      location: { id: 2, latitude: 39.6270, longitude: 66.9750 },
-      images: ['/assets/images/samarkand1.jpg', '/assets/images/samarkand2.jpg'],
+      location: { 
+        id: 2, 
+        latitude: 39.6270, 
+        longitude: 66.9750,
+        address: '12 Registan Street, Samarkand'
+      },
+      availableSeasons: [Season.SUMMER, Season.SPRING, Season.AUTUMN, Season.WINTER],
+      images: [
+        { url: '/assets/images/samarkand1.jpg', alt: 'Sanatorium building' },
+        { url: '/assets/images/samarkand2.jpg', alt: 'Sanatorium spa' }
+      ],
       rating: 4.8,
       price: 250,
-      amenities: ['Medical Care', 'Spa', 'Gym', 'Library', 'Garden']
-    },
-    {
-      id: 3,
-      name: 'Bukhara Desert Camp',
-      description: {
-        'uz': 'Buxoro cho\'l lageri',
-        'ru': 'Бухарский пустынный лагерь',
-        'en': 'Unique desert camping experience with traditional yurts'
-      },
-      type: PlaceType.CAMP,
-      cityId: 3,
-      locationId: 3,
-      availableSeasons: [Season.SPRING, Season.AUTUMN],
-      createdBy: 1,
-      city: this.cities[2],
-      location: { id: 3, latitude: 39.7747, longitude: 64.4286 },
-      images: ['/assets/images/bukhara1.jpg', '/assets/images/bukhara2.jpg'],
-      rating: 4.2,
-      price: 120,
-      amenities: ['Traditional Yurts', 'Camel Rides', 'Stargazing', 'Local Cuisine']
+      amenities: [3, 4, 5, 6], // Restaurant, Gym, Spa, Medical Care
+      capacity: 150,
+      contactPhone: '+998901234568',
+      contactEmail: 'info@samarkandsan.uz',
+      facilities: [
+        'Diagnostic center',
+        'Physical therapy',
+        'Mineral water baths',
+        'Nutrition counseling'
+      ],
+      rules: [
+        'Medical records required',
+        'Doctor consultations daily',
+        'Strict meal schedule',
+        'Visiting hours 15:00-19:00'
+      ]
     }
   ];
 
-  // Mock Groups
+  // Mock Groups with enhanced details
   public readonly groups: Group[] = [
     {
       id: 1,
+      name: 'Summer Adventure Group',
       placeId: 1,
       gender: Gender.BOTH,
       ageRangeStart: 18,
       ageRangeEnd: 35,
       totalCapacity: 50,
       availableSpots: 25,
-      createdAt: '2024-01-01T00:00:00Z',
-      updatedAt: '2024-01-01T00:00:00Z'
+      startDate: `${this.currentYear}-06-01`,
+      endDate: `${this.currentYear}-08-31`,
+      price: 1200,
+      description: 'Summer adventure program for young adults',
+      schedule: [
+        { day: 'Monday', activity: 'Hiking' },
+        { day: 'Wednesday', activity: 'Rock climbing' },
+        { day: 'Friday', activity: 'Team building' }
+      ]
     },
     {
       id: 2,
+      name: 'Family Wellness Program',
       placeId: 2,
       gender: Gender.BOTH,
-      ageRangeStart: 25,
+      ageRangeStart: 5,
       ageRangeEnd: 65,
       totalCapacity: 30,
       availableSpots: 15,
-      createdAt: '2024-01-01T00:00:00Z',
-      updatedAt: '2024-01-01T00:00:00Z'
-    },
-    {
-      id: 3,
-      placeId: 3,
-      gender: Gender.BOTH,
-      ageRangeStart: 20,
-      ageRangeEnd: 45,
-      totalCapacity: 20,
-      availableSpots: 8,
-      createdAt: '2024-01-01T00:00:00Z',
-      updatedAt: '2024-01-01T00:00:00Z'
+      startDate: `${this.currentYear}-05-15`,
+      endDate: `${this.currentYear}-10-15`,
+      price: 1800,
+      description: 'Family wellness and health improvement program',
+      schedule: [
+        { day: 'Daily', activity: 'Morning exercises' },
+        { day: 'Tuesday/Thursday', activity: 'Nutrition workshops' },
+        { day: 'Saturday', activity: 'Family activities' }
+      ]
     }
   ];
 
-  // Mock Users
+  // Mock Users with enhanced details
   public readonly users: User[] = [
     {
       userId: 1,
@@ -126,12 +214,19 @@ export class MockDataService {
       firstName: 'Admin',
       lastName: 'User',
       email: 'admin@oromland.com',
-      roleId: 1,
-      role: { id: 1, name: UserRole.ADMIN, permissions: [Permission.READ_USER, Permission.CREATE_USER, Permission.UPDATE_USER, Permission.DELETE_USER] },
+      role: UserRole.ADMIN,
+      permissions: [
+        Permission.MANAGE_USERS,
+        Permission.MANAGE_PLACES,
+        Permission.MANAGE_BOOKINGS,
+        Permission.MANAGE_DOCUMENTS
+      ],
       gender: UserGender.MALE,
       birthDate: '1990-01-01',
       phoneNumber: '+998901234567',
-      isActive: true
+      isActive: true,
+      lastLogin: '2024-02-15T09:30:00Z',
+      createdAt: '2023-01-01T00:00:00Z'
     },
     {
       userId: 2,
@@ -139,111 +234,215 @@ export class MockDataService {
       firstName: 'Regular',
       lastName: 'User',
       email: 'user@oromland.com',
-      roleId: 2,
-      role: { id: 2, name: UserRole.USER, permissions: [Permission.READ_USER, Permission.CREATE_BOOKING] },
+      role: UserRole.USER,
+      permissions: [
+        Permission.VIEW_PROFILE,
+        Permission.CREATE_BOOKING,
+        Permission.MANAGE_CHILDREN
+      ],
       gender: UserGender.MALE,
-      birthDate: '1995-01-01',
+      birthDate: '1995-05-15',
       phoneNumber: '+998901234568',
-      isActive: true
-    },
-    {
-      userId: 3,
-      username: 'manager',
-      firstName: 'Manager',
-      lastName: 'User',
-      email: 'manager@oromland.com',
-      roleId: 3,
-      role: { id: 3, name: UserRole.MANAGER, permissions: [Permission.READ_DOCUMENT, Permission.UPDATE_DOCUMENT] },
-      gender: UserGender.FEMALE,
-      birthDate: '1988-05-15',
-      phoneNumber: '+998901234569',
-      isActive: true
+      isActive: true,
+      lastLogin: '2024-02-14T15:45:00Z',
+      createdAt: '2023-05-10T00:00:00Z'
     }
   ];
 
-  // Mock Feedbacks
+  // Mock Children data
+  public readonly children: Child[] = [
+    {
+      id: 1,
+      userId: 2,
+      fullName: 'Alice User',
+      birthDate: '2015-03-10',
+      gender: Gender.FEMALE,
+      relationship: Relationship.CHILD,
+      medicalInfo: 'No known allergies',
+      specialNeeds: 'None',
+      createdAt: '2023-06-01T00:00:00Z'
+    },
+    {
+      id: 2,
+      userId: 2,
+      fullName: 'Bob User',
+      birthDate: '2018-07-22',
+      gender: Gender.MALE,
+      relationship: Relationship.CHILD,
+      medicalInfo: 'Peanut allergy',
+      specialNeeds: 'Requires epinephrine auto-injector',
+      createdAt: '2023-06-01T00:00:00Z'
+    }
+  ];
+
+  // Mock Bookings
+  public readonly bookings: Booking[] = [
+    {
+      id: 1,
+      userId: 2,
+      placeId: 1,
+      groupId: 1,
+      startDate: `${this.currentYear}-07-01`,
+      endDate: `${this.currentYear}-07-15`,
+      status: BookingStatus.CONFIRMED,
+      totalAmount: 1800,
+      paymentStatus: 'PAID',
+      createdAt: '2024-01-10T14:30:00Z',
+      updatedAt: '2024-01-10T14:30:00Z',
+      children: [1], // Alice User
+      documents: [1, 2] // Passport and medical form
+    }
+  ];
+
+  // Mock Documents
+  public readonly documents: Document[] = [
+    {
+      id: 1,
+      userId: 2,
+      childId: 1,
+      type: 'PASSPORT',
+      fileName: 'passport_alice_user.pdf',
+      fileType: 'application/pdf',
+      status: DocumentStatus.APPROVED,
+      uploadedAt: '2024-01-05T10:15:00Z',
+      reviewedAt: '2024-01-08T11:30:00Z',
+      reviewerId: 3,
+      comment: 'Document approved'
+    },
+    {
+      id: 2,
+      userId: 2,
+      childId: 1,
+      type: 'MEDICAL_FORM',
+      fileName: 'medical_form_alice_user.pdf',
+      fileType: 'application/pdf',
+      status: DocumentStatus.PENDING,
+      uploadedAt: '2024-01-05T10:20:00Z'
+    }
+  ];
+
+  // Mock Feedbacks with enhanced details
   public readonly feedbacks: Feedback[] = [
     {
       id: 1,
       userId: 2,
       placeId: 1,
+      bookingId: 1,
       rating: 5,
-      comment: 'Amazing mountain views and excellent facilities! Highly recommended for adventure lovers.',
-      createdAt: '2024-01-15T10:00:00Z',
-      updatedAt: '2024-01-15T10:00:00Z',
-      user: {
-        firstName: 'Regular',
-        lastName: 'User'
-      },
-      place: {
-        name: 'Mountain Resort Chimgan',
-        type: 'CAMP'
-      }
-    },
-    {
-      id: 2,
-      userId: 3,
-      placeId: 2,
-      rating: 4,
-      comment: 'Very good medical facilities and professional staff. The spa treatments were relaxing.',
-      createdAt: '2024-01-16T14:30:00Z',
-      updatedAt: '2024-01-16T14:30:00Z',
-      user: {
-        firstName: 'Manager',
-        lastName: 'User'
-      },
-      place: {
-        name: 'Samarkand Health Sanatorium',
-        type: 'SANATORIUM'
-      }
-    },
-    {
-      id: 3,
-      userId: 2,
-      placeId: 3,
-      rating: 4,
-      comment: 'Unique desert experience! The yurts were comfortable and the stargazing was incredible.',
-      createdAt: '2024-01-20T18:45:00Z',
-      updatedAt: '2024-01-20T18:45:00Z',
-      user: {
-        firstName: 'Regular',
-        lastName: 'User'
-      },
-      place: {
-        name: 'Bukhara Desert Camp',
-        type: 'CAMP'
+      comment: 'Amazing experience! The staff was very helpful and the facilities were excellent.',
+      createdAt: `${this.currentYear}-07-20T16:45:00Z`,
+      updatedAt: `${this.currentYear}-07-20T16:45:00Z`,
+      response: {
+        text: 'Thank you for your feedback! We are happy you enjoyed your stay.',
+        respondedAt: `${this.currentYear}-07-21T10:30:00Z`,
+        responderId: 3
       }
     }
   ];
 
   constructor() {}
 
-  // Helper methods
-  getCityById(id: number): City | undefined {
-    return this.cities.find(city => city.id === id);
+  // Data access methods with observables for API-like behavior
+  getCities(): Observable<City[]> {
+    return of(this.cities);
   }
 
-  getPlaceById(id: number): Place | undefined {
-    return this.places.find(place => place.id === id);
+  getCityById(id: number): Observable<City | undefined> {
+    return of(this.cities.find(c => c.id === id));
   }
 
-  getUserById(id: number): User | undefined {
-    return this.users.find(user => user.userId === id);
+  getPlaces(): Observable<Place[]> {
+    return of(this.places);
   }
 
-  getPlacesByCity(cityId: number): Place[] {
-    return this.places.filter(place => place.city?.id === cityId);
+  getPlaceById(id: number): Observable<Place | undefined> {
+    return of(this.places.find(p => p.id === id));
   }
 
-  getPlacesByType(type: PlaceType): Place[] {
-    return this.places.filter(place => place.type === type);
+  getPlacesByType(type: PlaceType): Observable<Place[]> {
+    return of(this.places.filter(p => p.type === type));
   }
 
-  getFeedbacksByPlace(placeId: number): Feedback[] {
-    return this.feedbacks.filter(feedback => feedback.placeId === placeId);
+  getPlacesByCity(cityId: number): Observable<Place[]> {
+    return of(this.places.filter(p => p.cityId === cityId));
   }
 
-  getGroupsByPlace(placeId: number): Group[] {
-    return this.groups.filter(group => group.placeId === placeId);
+  getGroups(): Observable<Group[]> {
+    return of(this.groups);
+  }
+
+  getGroupsByPlace(placeId: number): Observable<Group[]> {
+    return of(this.groups.filter(g => g.placeId === placeId));
+  }
+
+  getUsers(): Observable<User[]> {
+    return of(this.users);
+  }
+
+  getUserById(id: number): Observable<User | undefined> {
+    return of(this.users.find(u => u.userId === id));
+  }
+
+  getChildrenByUser(userId: number): Observable<Child[]> {
+    return of(this.children.filter(c => c.userId === userId));
+  }
+
+  getBookings(): Observable<Booking[]> {
+    return of(this.bookings);
+  }
+
+  getBookingsByUser(userId: number): Observable<Booking[]> {
+    return of(this.bookings.filter(b => b.userId === userId));
+  }
+
+  getDocuments(): Observable<Document[]> {
+    return of(this.documents);
+  }
+
+  getDocumentsByUser(userId: number): Observable<Document[]> {
+    return of(this.documents.filter(d => d.userId === userId));
+  }
+
+  getFeedbacks(): Observable<Feedback[]> {
+    return of(this.feedbacks);
+  }
+
+  getFeedbacksByPlace(placeId: number): Observable<Feedback[]> {
+    return of(this.feedbacks.filter(f => f.placeId === placeId));
+  }
+
+  // Search methods
+  searchPlaces(params: {
+    cityId?: number;
+    type?: PlaceType;
+    minPrice?: number;
+    maxPrice?: number;
+    amenities?: number[];
+  }): Observable<Place[]> {
+    let results = [...this.places];
+    
+    if (params.cityId) {
+      results = results.filter(p => p.cityId === params.cityId);
+    }
+    
+    if (params.type) {
+      results = results.filter(p => p.type === params.type);
+    }
+    
+    if (params.minPrice) {
+      results = results.filter(p => p.price >= params.minPrice);
+    }
+    
+    if (params.maxPrice) {
+      results = results.filter(p => p.price <= params.maxPrice);
+    }
+    
+    if (params.amenities && params.amenities.length > 0) {
+      results = results.filter(p => 
+        params.amenities!.every(a => p.amenities.includes(a))
+      );
+    }
+    
+    return of(results);
   }
 }

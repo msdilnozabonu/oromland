@@ -1,180 +1,232 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { Booking, Child, Document as BookingDocument, DocumentStatus, BookingStatus, Gender, Relationship } from '../models/booking.model';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable, of, throwError } from 'rxjs';
+import { catchError, map, tap } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
+import { 
+  Booking, 
+  Child, 
+  Document as BookingDocument, 
+  DocumentStatus, 
+  BookingStatus, 
+  Gender, 
+  Relationship 
+} from '../models/booking.model';
 import { Document } from '../models/document.model';
 
 export interface CreateBookingRequest {
   placeId: number;
-  groupId: number;
+  placeType: 'sanatorium' | 'camp';
+  groupId?: number;
   children: Partial<Child>[];
+  startDate: string;
+  endDate: string;
 }
 
 export interface BookingSearchParams {
-  status?: string;
+  status?: BookingStatus;
   userId?: number;
   placeId?: number;
+  placeType?: 'sanatorium' | 'camp';
   page?: number;
   size?: number;
+  sort?: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class BookingService {
-  // Mock data
-  private mockBookings: Booking[] = [];
-  private mockDocuments: Document[] = [];
-  private nextBookingId = 1;
-  private nextDocumentId = 1;
+  private baseUrl = `${environment.apiUrl}`;
 
-  constructor() {}
-
-  // Mock user endpoints
+  constructor(private http: HttpClient) {}
   getUserBookings(): Observable<Booking[]> {
-    return of(this.mockBookings);
+    return this.http.get<Booking[]>(`${this.baseUrl}/api/v1/user/bookings`).pipe(
+      catchError(this.handleError)
+    );
   }
 
-  getBookingById(id: number): Observable<Booking> {
-    const booking = this.mockBookings.find(b => b.id === id);
-    if (booking) {
-      return of(booking);
-    }
-    throw new Error('Booking not found');
+  getBookingById(id: number, placeType: 'sanatorium' | 'camp'): Observable<Booking> {
+    return this.http.get<Booking>(
+      `${this.baseUrl}/api/v1/user/bookings/${placeType}/${id}`
+    ).pipe(
+      catchError(this.handleError)
+    );
   }
 
-  createBooking(booking: CreateBookingRequest): Observable<Booking> {
-    const newBooking: Booking = {
-      id: this.nextBookingId++,
-      userId: 1,
-      placeId: booking.placeId,
-      groupId: booking.groupId,
-      user: { userId: 1, username: 'user', firstName: 'User', lastName: 'Test', email: 'user@test.com' },
-      place: { id: booking.placeId, name: 'Test Place' },
-      group: { id: booking.groupId, name: 'Test Group' },
-      children: booking.children.map((child, index) => ({
-        id: index + 1,
-        userId: 1,
-        campId: booking.placeId,
-        fullName: child.fullName || 'Child Test',
-        birthDate: child.birthDate || '2010-01-01',
-        gender: (child.gender as Gender) || Gender.MALE,
-        relationship: (child.relationship as Relationship) || Relationship.SELF,
-        createdAt: new Date().toISOString()
-      })),
-      status: BookingStatus.PENDING,
-      totalAmount: 100,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-    
-    this.mockBookings.push(newBooking);
-    return of(newBooking);
+  createBooking(bookingData: CreateBookingRequest): Observable<Booking> {
+    const endpoint = bookingData.placeType === 'sanatorium' 
+      ? '/api/sanatoriums/booking'
+      : '/api/camps/booking';
+
+    return this.http.post<Booking>(
+      `${this.baseUrl}${endpoint}`,
+      bookingData
+    ).pipe(
+      catchError(this.handleError)
+    );
   }
 
-  updateBooking(id: number, booking: Partial<Booking>): Observable<Booking> {
-    const index = this.mockBookings.findIndex(b => b.id === id);
-    if (index !== -1) {
-      this.mockBookings[index] = { ...this.mockBookings[index], ...booking };
-      return of(this.mockBookings[index]);
-    }
-    throw new Error('Booking not found');
+  updateBooking(
+    id: number, 
+    placeType: 'sanatorium' | 'camp',
+    updates: Partial<Booking>
+  ): Observable<Booking> {
+    return this.http.put<Booking>(
+      `${this.baseUrl}/api/v1/user/bookings/${placeType}/${id}`,
+      updates
+    ).pipe(
+      catchError(this.handleError)
+    );
   }
 
-  cancelBooking(id: number): Observable<void> {
-    const index = this.mockBookings.findIndex(b => b.id === id);
-    if (index !== -1) {
-      this.mockBookings.splice(index, 1);
-      return of(void 0);
-    }
-    throw new Error('Booking not found');
+  cancelBooking(id: number, placeType: 'sanatorium' | 'camp'): Observable<void> {
+    return this.http.delete<void>(
+      `${this.baseUrl}/api/v1/user/bookings/${placeType}/${id}`
+    ).pipe(
+      catchError(this.handleError)
+    );
   }
 
-  // Mock document management
   getUserDocuments(): Observable<Document[]> {
-    return of(this.mockDocuments);
+    return this.http.get<Document[]>(`${this.baseUrl}/api/v1/user/documents`).pipe(
+      catchError(this.handleError)
+    );
   }
 
   getDocumentById(id: number): Observable<Document> {
-    const document = this.mockDocuments.find(d => d.id === id);
-    if (document) {
-      return of(document);
-    }
-    throw new Error('Document not found');
+    return this.http.get<Document>(`${this.baseUrl}/api/v1/user/documents/${id}`).pipe(
+      catchError(this.handleError)
+    );
   }
 
-  uploadDocument(childId: number, file: File): Observable<any> {
-    const newDocument: Document = {
-      id: this.nextDocumentId++,
-      userId: 1,
-      fileName: file.name,
-      fileType: file.type,
-      filePath: 'mock-path/' + file.name,
-      status: DocumentStatus.PENDING,
-      uploadDate: new Date().toISOString(),
-      submittedAt: new Date().toISOString()
-    };
-    
-    this.mockDocuments.push(newDocument);
-    return of({ success: true, document: newDocument });
+  uploadDocument(childId: number, file: File): Observable<Document> {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('childId', childId.toString());
+
+    return this.http.post<Document>(
+      `${this.baseUrl}/api/v1/user/documents`,
+      formData
+    ).pipe(
+      catchError(this.handleError)
+    );
   }
 
-  // Mock Admin/Manager endpoints
-  getAllBookings(searchParams?: BookingSearchParams): Observable<{ content: Booking[], totalElements: number }> {
-    let bookings = [...this.mockBookings];
-    
-    if (searchParams?.status) {
-      bookings = bookings.filter(b => b.status === searchParams.status);
+  getAllBookings(searchParams?: BookingSearchParams): Observable<{ 
+    content: Booking[]; 
+    totalElements: number 
+  }> {
+    let params = new HttpParams();
+
+    if (searchParams) {
+      Object.entries(searchParams).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          params = params.append(key, value.toString());
+        }
+      });
     }
-    
-    if (searchParams?.userId) {
-      bookings = bookings.filter(b => b.user.id === searchParams.userId);
-    }
-    
-    if (searchParams?.placeId) {
-      bookings = bookings.filter(b => b.place.id === searchParams.placeId);
-    }
-    
-    return of({ content: bookings, totalElements: bookings.length });
+
+    return this.http.get<{ content: Booking[]; totalElements: number }>(
+      `${this.baseUrl}/dashboard/admin/bookings`,
+      { params }
+    ).pipe(
+      catchError(this.handleError)
+    );
   }
 
-  getAllDocuments(searchParams?: any): Observable<{ content: Document[], totalElements: number }> {
-    let documents = [...this.mockDocuments];
-    
-    if (searchParams?.status) {
-      documents = documents.filter(d => d.status === searchParams.status);
+  getAllDocuments(searchParams?: { 
+    status?: DocumentStatus; 
+    userId?: number 
+  }): Observable<{ content: Document[]; totalElements: number }> {
+    let params = new HttpParams();
+
+    if (searchParams) {
+      Object.entries(searchParams).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          params = params.append(key, value.toString());
+        }
+      });
     }
-    
-    return of({ content: documents, totalElements: documents.length });
+
+    return this.http.get<{ content: Document[]; totalElements: number }>(
+      `${this.baseUrl}/dashboard/admin/documents`,
+      { params }
+    ).pipe(
+      catchError(this.handleError)
+    );
   }
 
-  // Mock Manager document review
+  getManagerBookings(placeType: 'sanatorium' | 'camp'): Observable<Booking[]> {
+    return this.http.get<Booking[]>(
+      `${this.baseUrl}/api/v1/manager/${placeType}/bookings`
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  getManagerBookingDetails(
+    placeType: 'sanatorium' | 'camp',
+    placeId: number,
+    bookingId: number
+  ): Observable<Booking> {
+    return this.http.get<Booking>(
+      `${this.baseUrl}/api/v1/manager/${placeType}/${placeId}/bookings/${bookingId}`
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  updateManagerBooking(
+    placeType: 'sanatorium' | 'camp',
+    placeId: number,
+    bookingId: number,
+    updates: Partial<Booking>
+  ): Observable<Booking> {
+    return this.http.put<Booking>(
+      `${this.baseUrl}/api/v1/manager/${placeType}/${placeId}/bookings/${bookingId}`,
+      updates
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
   acceptDocument(id: number, comment?: string): Observable<Document> {
-    const index = this.mockDocuments.findIndex(d => d.id === id);
-    if (index !== -1) {
-      this.mockDocuments[index].status = DocumentStatus.ACCEPTED;
-      this.mockDocuments[index].reviewedAt = new Date().toISOString();
-      if (comment) {
-        this.mockDocuments[index].comment = comment;
-      }
-      return of(this.mockDocuments[index]);
-    }
-    throw new Error('Document not found');
+    return this.http.put<Document>(
+      `${this.baseUrl}/api/v1/manager/documents/${id}/accept`,
+      { comment }
+    ).pipe(
+      catchError(this.handleError)
+    );
   }
 
   rejectDocument(id: number, comment: string): Observable<Document> {
-    const index = this.mockDocuments.findIndex(d => d.id === id);
-    if (index !== -1) {
-      this.mockDocuments[index].status = DocumentStatus.REJECTED;
-      this.mockDocuments[index].reviewedAt = new Date().toISOString();
-      this.mockDocuments[index].comment = comment;
-      return of(this.mockDocuments[index]);
-    }
-    throw new Error('Document not found');
+    return this.http.put<Document>(
+      `${this.baseUrl}/api/v1/manager/documents/${id}/reject`,
+      { comment }
+    ).pipe(
+      catchError(this.handleError)
+    );
   }
 
-  // Mock Operator endpoints
-  getDocumentRejections(): Observable<Document[]> {
-    const rejectedDocs = this.mockDocuments.filter(d => d.status === DocumentStatus.REJECTED);
-    return of(rejectedDocs);
+  getSuperAdminBookings(placeType: 'sanatorium' | 'camp'): Observable<Booking[]> {
+    return this.http.get<Booking[]>(
+      `${this.baseUrl}/dashboard/super-admin/bookings/${placeType}`
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  private handleError(error: any): Observable<never> {
+    let errorMessage = 'An error occurred';
+    
+    if (error.error instanceof ErrorEvent) {
+      errorMessage = `Error: ${error.error.message}`;
+    } else {
+      errorMessage = error.error?.message || error.message || 'Server error';
+    }
+    
+    console.error(errorMessage);
+    return throwError(() => new Error(errorMessage));
   }
 }

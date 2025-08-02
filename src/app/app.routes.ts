@@ -4,13 +4,16 @@ import { RoleGuard } from './guards/role.guard';
 import { UserRole } from './models/user.model';
 
 export const routes: Routes = [
-  // Public routes
+
   {
     path: '',
     loadComponent: () => import('./home/home.component').then(m => m.HomeComponent)
   },
   {
+  
     path: 'login',
+    redirectTo: 'auth/login',
+    pathMatch: 'full',
     loadComponent: () => import('./login/login.component').then(m => m.LoginComponent)
   },
   {
@@ -64,7 +67,6 @@ export const routes: Routes = [
     data: { type: 'SANATORIUM' }
   },
 
-  // dashboard routes with new layout
   {
     path: 'dashboard',
     loadComponent: () => import('./dashboard/dashboard.component').then(m => m.DashboardComponent),

@@ -1,7 +1,10 @@
 import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
+import { Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
-// Extend the Window interface to include Firebug property
 declare global {
   interface Window {
     Firebug?: {
@@ -12,14 +15,32 @@ declare global {
   }
 }
 
+export interface SecurityEvent {
+  event: string;
+  timestamp: string;
+  userAgent: string;
+  url: string;
+  metadata?: any;
+}
+
+export interface PasswordStrengthResult {
+  score: number;
+  feedback: string[];
+  isStrong: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class SecurityService {
   private readonly SESSION_TIMEOUT = 30 * 60 * 1000; // 30 minutes
   private sessionTimer?: any;
+  private apiUrl = `${environment.apiUrl}/security`;
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private http: HttpClient
+  ) {
     this.initializeSecurityFeatures();
   }
 
@@ -31,8 +52,10 @@ export class SecurityService {
     }
   }
 
-  // Detect if developer tools are open (basic detection)
+  // Enhanced DevTools detection with backend logging
   private detectDevTools(): void {
+    if (!this.isProduction()) return;
+
     let devtools = {
       open: false,
       orientation: null
@@ -48,8 +71,13 @@ export class SecurityService {
           ((window.Firebug && window.Firebug.chrome && window.Firebug.chrome.isInitialized) || widthThreshold || heightThreshold)) {
         if (!devtools.open) {
           devtools.open = true;
-          console.warn('Developer tools detected');
-          // You can add additional security measures here
+          this.logSecurityEvent({
+            event: 'devtools_opened',
+            metadata: {
+              widthDiff: window.outerWidth - window.innerWidth,
+              heightDiff: window.outerHeight - window.innerHeight
+            }
+          });
         }
       } else {
         devtools.open = false;
@@ -60,69 +88,71 @@ export class SecurityService {
     window.addEventListener('resize', detectDevTools);
   }
 
-  // Prevent right-click context menu on production
+  // Production-only security restrictions
   private preventContextMenu(): void {
-    if (this.isProduction()) {
-      document.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        return false;
-      });
+    if (!this.isProduction()) return;
 
-      // Prevent common keyboard shortcuts
-      document.addEventListener('keydown', (e) => {
-        // Prevent F12, Ctrl+Shift+I, Ctrl+Shift+C, Ctrl+U
-        if (e.key === 'F12' || 
-            (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'C')) ||
-            (e.ctrlKey && e.key === 'U')) {
-          e.preventDefault();
-          return false;
-        }
-        // Return true for non-suspicious keys
-        return true;
-      });
-    }
+    document.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      return false;
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'F12' || 
+          (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'C')) ||
+          (e.ctrlKey && e.key === 'U')) {
+        e.preventDefault();
+        this.logSecurityEvent({
+          event: 'devtools_shortcut_attempt',
+          metadata: { keyCombination: e.key }
+        });
+        return false;
+      }
+      return true;
+    });
   }
 
-  // Detect suspicious activities
+  // Suspicious activity detection with backend integration
   private detectSuspiciousActivity(): void {
+    if (!this.isProduction()) return;
+
     let clickCount = 0;
     let suspiciousKeyCount = 0;
 
-    // Monitor excessive clicking
     document.addEventListener('click', () => {
       clickCount++;
       setTimeout(() => clickCount--, 1000);
       
-      if (clickCount > 20) { // 20 clicks per second is suspicious
-        console.warn('Suspicious clicking pattern detected');
-        this.logSecurityEvent('excessive_clicking');
+      if (clickCount > 20) {
+        this.logSecurityEvent({
+          event: 'excessive_clicking',
+          metadata: { clickCount }
+        });
       }
     });
 
-    // Monitor suspicious key combinations
     document.addEventListener('keydown', (e) => {
       const suspiciousKeys = ['F12', 'F11', 'PrintScreen'];
       if (suspiciousKeys.includes(e.key)) {
         suspiciousKeyCount++;
         if (suspiciousKeyCount > 5) {
-          console.warn('Suspicious key usage detected');
-          this.logSecurityEvent('suspicious_keys');
+          this.logSecurityEvent({
+            event: 'suspicious_key_usage',
+            metadata: { key: e.key, count: suspiciousKeyCount }
+          });
         }
       }
     });
 
-    // Reset suspicious key count every minute
-    setInterval(() => {
-      suspiciousKeyCount = 0;
-    }, 60000);
+    setInterval(() => suspiciousKeyCount = 0, 60000);
   }
 
-  // Session management
+  // Session management with backend sync
   startSessionTimer(onTimeout: () => void): void {
     this.clearSessionTimer();
     
     this.sessionTimer = setTimeout(() => {
-      console.warn('Session timeout');
+      this.logSecurityEvent({ event: 'session_timeout' });
       onTimeout();
     }, this.SESSION_TIMEOUT);
   }
@@ -134,28 +164,51 @@ export class SecurityService {
   clearSessionTimer(): void {
     if (this.sessionTimer) {
       clearTimeout(this.sessionTimer);
-      this.sessionTimer = null;
+      this.sessionTimer = undefined;
     }
   }
 
-  // Input sanitization
+  // Input validation with backend verification
   sanitizeHtml(input: string): string {
     const div = document.createElement('div');
     div.textContent = input;
     return div.innerHTML;
   }
 
-  validateEmail(email: string): boolean {
+  validateEmail(email: string): Observable<{ valid: boolean; message?: string }> {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email) && !this.containsSuspiciousPatterns(email);
+    const basicValidation = emailRegex.test(email) && !this.containsSuspiciousPatterns(email);
+    
+    if (!basicValidation) {
+      return of({ valid: false, message: 'Invalid email format' });
+    }
+
+    // Check with backend for additional validation (e.g., disposable email)
+    return this.http.post<{ valid: boolean; message?: string }>(
+      `${this.apiUrl}/validate-email`,
+      { email }
+    ).pipe(
+      catchError(() => of({ valid: basicValidation }))
+    );
   }
 
-  validatePhoneNumber(phone: string): boolean {
+  validatePhoneNumber(phone: string): Observable<{ valid: boolean; message?: string }> {
     const uzbekPhoneRegex = /^\+998\d{9}$/;
-    return uzbekPhoneRegex.test(phone);
+    const basicValidation = uzbekPhoneRegex.test(phone);
+    
+    if (!basicValidation) {
+      return of({ valid: false, message: 'Invalid Uzbek phone number format' });
+    }
+
+    // Check with backend for additional validation
+    return this.http.post<{ valid: boolean; message?: string }>(
+      `${this.apiUrl}/validate-phone`,
+      { phone }
+    ).pipe(
+      catchError(() => of({ valid: basicValidation }))
+    );
   }
 
-  // Check for SQL injection patterns
   containsSuspiciousPatterns(input: string): boolean {
     const suspiciousPatterns = [
       /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|UNION)\b)/gi,
@@ -168,8 +221,8 @@ export class SecurityService {
     return suspiciousPatterns.some(pattern => pattern.test(input));
   }
 
-  // Rate limiting for client-side
-  isRateLimited(action: string, maxAttempts: number = 5, windowMs: number = 60000): boolean {
+  // Rate limiting with backend coordination
+  isRateLimited(action: string, maxAttempts: number = 5, windowMs: number = 60000): Observable<boolean> {
     const key = `rate_limit_${action}`;
     const now = Date.now();
     
@@ -177,32 +230,65 @@ export class SecurityService {
     const recentAttempts = attempts.filter((timestamp: number) => now - timestamp < windowMs);
     
     if (recentAttempts.length >= maxAttempts) {
-      return true;
+      return of(true);
     }
 
-    recentAttempts.push(now);
-    localStorage.setItem(key, JSON.stringify(recentAttempts));
-    return false;
+    // Check with backend for global rate limiting
+    return this.http.post<{ limited: boolean }>(
+      `${this.apiUrl}/rate-limit`,
+      { action, timestamp: now }
+    ).pipe(
+      map(response => response.limited),
+      catchError(() => {
+        // If backend check fails, use client-side only
+        recentAttempts.push(now);
+        localStorage.setItem(key, JSON.stringify(recentAttempts));
+        return of(false);
+      })
+    );
   }
 
-  // Generate secure random password
-  generateSecurePassword(length: number = 16): string {
-    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
-    let password = '';
+  // Password generation with backend strength check
+  generateSecurePassword(length: number = 16): Observable<string> {
+    // First try to get from backend
+    return this.http.get<{ password: string }>(
+      `${this.apiUrl}/generate-password`,
+      { params: { length: length.toString() } }
+    ).pipe(
+      map(response => response.password),
+      catchError(() => {
+        // Fallback to client-side generation
+        const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+        let password = '';
+        
+        for (let i = 0; i < length; i++) {
+          password += charset.charAt(Math.floor(Math.random() * charset.length));
+        }
+        
+        return of(password);
+      })
+    );
+  }
+
+  // Password strength check with backend verification
+  checkPasswordStrength(password: string): Observable<PasswordStrengthResult> {
+    // First check client-side
+    const clientResult = this.clientSidePasswordCheck(password);
     
-    for (let i = 0; i < length; i++) {
-      password += charset.charAt(Math.floor(Math.random() * charset.length));
+    if (!clientResult.isStrong) {
+      return of(clientResult);
     }
-    
-    return password;
+
+    // Then verify with backend
+    return this.http.post<PasswordStrengthResult>(
+      `${this.apiUrl}/check-password-strength`,
+      { password }
+    ).pipe(
+      catchError(() => of(clientResult))
+    );
   }
 
-  // Check password strength
-  checkPasswordStrength(password: string): {
-    score: number;
-    feedback: string[];
-    isStrong: boolean;
-  } {
+  private clientSidePasswordCheck(password: string): PasswordStrengthResult {
     const feedback: string[] = [];
     let score = 0;
 
@@ -223,7 +309,6 @@ export class SecurityService {
 
     if (password.length >= 12) score++;
 
-    // Check for common patterns
     if (/(.)\1{2,}/.test(password)) {
       score--;
       feedback.push('Avoid repeating characters');
@@ -241,46 +326,72 @@ export class SecurityService {
     };
   }
 
-  private isProduction(): boolean {
-    return window.location.hostname !== 'localhost' && 
-           window.location.hostname !== '127.0.0.1';
-  }
+  // Security event logging with backend integration
+  logSecurityEvent(event: Omit<SecurityEvent, 'timestamp' | 'userAgent' | 'url'>): void {
+    if (!isPlatformBrowser(this.platformId)) return;
 
-  private logSecurityEvent(event: string): void {
-    // In production, you would send this to your security monitoring service
-    const logEntry = {
-      event,
+    const fullEvent: SecurityEvent = {
+      ...event,
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
       url: window.location.href
     };
-    
-    console.warn('Security Event:', logEntry);
-    
-    // Store locally for now (in production, send to server)
+
+    // Store locally
     const securityLogs = JSON.parse(localStorage.getItem('security_logs') || '[]');
-    securityLogs.push(logEntry);
+    securityLogs.push(fullEvent);
     
-    // Keep only last 50 logs
     if (securityLogs.length > 50) {
       securityLogs.shift();
     }
     
     localStorage.setItem('security_logs', JSON.stringify(securityLogs));
+
+    // Send to backend if available
+    if (this.isProduction()) {
+      this.http.post(`${this.apiUrl}/log-event`, fullEvent).pipe(
+        catchError(() => of(null))
+      ).subscribe();
+    }
   }
 
-  // Clear sensitive data from memory (basic implementation)
-  clearSensitiveData(): void {
-    // Clear form data
+  // Clear sensitive data with backend notification
+  clearSensitiveData(): Observable<void> {
+    // Clear client-side data
     const forms = document.querySelectorAll('form');
     forms.forEach(form => form.reset());
 
-    // Clear any password fields
     const passwordFields = document.querySelectorAll('input[type="password"]');
     passwordFields.forEach((field: any) => {
       field.value = '';
       field.type = 'text';
-      field.type = 'password'; // Force redraw
+      field.type = 'password';
     });
+
+    // Notify backend
+    return this.http.post<void>(`${this.apiUrl}/clear-sensitive-data`, {}).pipe(
+      catchError(() => of(undefined))
+    );
+  }
+
+  // Environment check
+  private isProduction(): boolean {
+    return isPlatformBrowser(this.platformId) && 
+           window.location.hostname !== 'localhost' && 
+           window.location.hostname !== '127.0.0.1';
+  }
+
+  // Get security logs (for admin purposes)
+  getSecurityLogs(): Observable<SecurityEvent[]> {
+    if (!isPlatformBrowser(this.platformId)) return of([]);
+
+    // First try to get from backend
+    return this.http.get<SecurityEvent[]>(`${this.apiUrl}/logs`).pipe(
+      catchError(() => {
+        // Fall back to local logs
+        const logs = JSON.parse(localStorage.getItem('security_logs') || '[]');
+        return of(logs);
+      })
+    );
   }
 }

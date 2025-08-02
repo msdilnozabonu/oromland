@@ -1,74 +1,128 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 import { Document, DocumentStatus } from '../models/document.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class DocumentService {
-  // Mock data
-  private mockDocuments: Document[] = [];
-  private nextDocumentId = 1;
+  private baseUrl = `${environment.apiUrl}/api/v1/documents`;
 
-  constructor() {}
+  constructor(private http: HttpClient) {}
 
+  /**
+   * Get all documents for the current user
+   */
   getUserDocuments(): Observable<Document[]> {
-    return of(this.mockDocuments);
+    return this.http.get<Document[]>(this.baseUrl).pipe(
+      catchError(this.handleError)
+    );
   }
 
-  getBookingDocuments(bookingId: number): Observable<Document[]> {
-    const bookingDocs = this.mockDocuments.filter(d => d.bookingId === bookingId);
-    return of(bookingDocs);
+  /**
+   * Get documents for a specific booking
+   * @param bookingId The booking ID
+   * @param placeType 'sanatorium' or 'camp'
+   */
+  getBookingDocuments(bookingId: number, placeType: 'sanatorium' | 'camp'): Observable<Document[]> {
+    const params = new HttpParams()
+      .set('bookingId', bookingId.toString())
+      .set('placeType', placeType);
+
+    return this.http.get<Document[]>(`${this.baseUrl}/booking`, { params }).pipe(
+      catchError(this.handleError)
+    );
   }
 
+  /**
+   * Upload a new document
+   * @param formData FormData containing the file and metadata
+   */
   uploadDocument(formData: FormData): Observable<Document> {
-    const file = formData.get('file') as File;
-    const bookingId = formData.get('bookingId') as string;
-    
-    const newDocument: Document = {
-      id: this.nextDocumentId++,
-      userId: 1,
-      fileName: file?.name || 'document.pdf',
-      fileType: file?.type || 'application/pdf',
-      filePath: 'mock-path/' + (file?.name || 'document.pdf'),
-      status: DocumentStatus.PENDING,
-      bookingId: bookingId ? parseInt(bookingId) : 1,
-      uploadDate: new Date().toISOString(),
-      submittedAt: new Date().toISOString()
-    };
-    
-    this.mockDocuments.push(newDocument);
-    return of(newDocument);
+    return this.http.post<Document>(this.baseUrl, formData).pipe(
+      catchError(this.handleError)
+    );
   }
 
+  /**
+   * Delete a document
+   * @param documentId The document ID to delete
+   */
   deleteDocument(documentId: number): Observable<void> {
-    const index = this.mockDocuments.findIndex(d => d.id === documentId);
-    if (index !== -1) {
-      this.mockDocuments.splice(index, 1);
-      return of(void 0);
-    }
-    throw new Error('Document not found');
+    return this.http.delete<void>(`${this.baseUrl}/${documentId}`).pipe(
+      catchError(this.handleError)
+    );
   }
 
+  /**
+   * Approve a document (for managers/admins)
+   * @param documentId The document ID to approve
+   * @param comment Optional approval comment
+   */
   approveDocument(documentId: number, comment?: string): Observable<Document> {
-    const index = this.mockDocuments.findIndex(d => d.id === documentId);
-    if (index !== -1) {
-      this.mockDocuments[index].status = DocumentStatus.ACCEPTED;
-      this.mockDocuments[index].reviewedAt = new Date().toISOString();
-      this.mockDocuments[index].comment = comment;
-      return of(this.mockDocuments[index]);
-    }
-    throw new Error('Document not found');
+    return this.http.put<Document>(
+      `${this.baseUrl}/${documentId}/approve`,
+      { comment }
+    ).pipe(
+      catchError(this.handleError)
+    );
   }
 
+  /**
+   * Reject a document (for managers/admins)
+   * @param documentId The document ID to reject
+   * @param comment Rejection reason (required)
+   */
   rejectDocument(documentId: number, comment: string): Observable<Document> {
-    const index = this.mockDocuments.findIndex(d => d.id === documentId);
-    if (index !== -1) {
-      this.mockDocuments[index].status = DocumentStatus.REJECTED;
-      this.mockDocuments[index].reviewedAt = new Date().toISOString();
-      this.mockDocuments[index].comment = comment;
-      return of(this.mockDocuments[index]);
+    if (!comment) {
+      return throwError(() => new Error('Rejection comment is required'));
     }
-    throw new Error('Document not found');
+
+    return this.http.put<Document>(
+      `${this.baseUrl}/${documentId}/reject`,
+      { comment }
+    ).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Get documents requiring review (for managers/admins)
+   * @param status Filter by status (default: PENDING)
+   */
+  getDocumentsForReview(status: DocumentStatus = DocumentStatus.PENDING): Observable<Document[]> {
+    const params = new HttpParams().set('status', status);
+    return this.http.get<Document[]>(`${this.baseUrl}/review`, { params }).pipe(
+      catchError(this.handleError)
+    );
+  }
+
+  /**
+   * Get document download URL
+   * @param documentId The document ID
+   */
+  getDocumentDownloadUrl(documentId: number): string {
+    return `${this.baseUrl}/${documentId}/download`;
+  }
+
+  /**
+   * Handle API errors
+   * @param error The error response
+   */
+  private handleError(error: any): Observable<never> {
+    let errorMessage = 'An error occurred';
+    
+    if (error.error instanceof ErrorEvent) {
+      // Client-side error
+      errorMessage = `Error: ${error.error.message}`;
+    } else {
+      errorMessage = error.error?.message || error.message || 'Server error';
+    }
+    
+    console.error(errorMessage);
+    return throwError(() => new Error(errorMessage));
   }
 }
